@@ -1,0 +1,17 @@
+<RCC>
+	<qresource prefix="/">
+		<file>qtquickcontrols2.conf</file>
+		<file>main.qml</file>
+		<file>AplicationMenu.qml</file>
+		<file>Tabs.qml</file>
+		<file>InputConf.qml</file>
+		<file>OutputConf.qml</file>
+		<file>ResultTab.qml</file>
+		<file>PlotArea.qml</file>
+		<file>IsocontourSurface.qml</file>
+		<file>Graphs.qml</file>
+		<file>Output.qml</file>
+		<file>Footer.qml</file>
+		<file>LabelInput.qml</file>
+	</qresource>
+</RCC>
