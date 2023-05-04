@@ -3,9 +3,6 @@ QT += quick
 QT += widgets
 CONFIG += c++17
 
-# Uncomment to enable sanitizer
-# if config has sanitizer, then add -fsanitize=address,undefined,leak
-
 CONFIG(sanitizer) {
 	message("Sanitizer enabled")
 	CONFIG += sanitizer sanitize_address sanitize_undefined sanitize_leak
@@ -29,11 +26,9 @@ UI_DIR = $$DESTDIR/ui
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
-# HEADERS +=
-SOURCES += \
-	src/main.cpp
-RESOURCES += \
-	src-qml/qml.qrc
+HEADERS += src/headers/*.h
+SOURCES += src/*.cpp
+RESOURCES += src-qml/qml.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
