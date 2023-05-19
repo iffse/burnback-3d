@@ -26,8 +26,15 @@ UI_DIR = $$DESTDIR/ui
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
-HEADERS += src/headers/*.h
-SOURCES += src/*.cpp
+HEADERS += \
+	./src/headers/types.h \
+	./src/headers/globals.h \
+	./src/headers/iosystem.h \
+	./src/headers/operations.h
+SOURCES += \
+	./src/main.cpp \
+	./src/iosystem.cpp \
+	./src/operations.cpp
 RESOURCES += src-qml/qml.qrc
 
 # Default rules for deployment.
