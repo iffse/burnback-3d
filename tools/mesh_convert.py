@@ -54,7 +54,6 @@ conditions = {
 	'boundary': [],
 	'recession': [],
 	'triangle': [],
-	'tetrahedra': []
 }
 
 print('Reading mesh data...')
@@ -108,7 +107,8 @@ for field in mesh.field_data:
 
 print('Assining conditions to boundaries and recession nodes...')
 for cell in mesh.cell_data_dict['gmsh:physical']:
-	conditions[cell] = mesh.cell_data_dict['gmsh:physical'][cell].tolist()
+	if cell in boundaries:
+		conditions[cell] = mesh.cell_data_dict['gmsh:physical'][cell].tolist()
 
 if recessions != {}:
 	conditions['recession'] = [1] * len(data['point'])
