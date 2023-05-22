@@ -12,7 +12,7 @@ inline Input input;
 inline Mesh mesh;
 inline TetrahedraGeometry tetrahedraGeometry;
 inline std::map<uint, Boundary> boundaries;
-inline NodeData nodeData;
+inline ComputationData computationData;
 
 inline double timeStep;
 inline double timeTotal;

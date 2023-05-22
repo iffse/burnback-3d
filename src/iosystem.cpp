@@ -75,7 +75,7 @@ void readMesh(std::string &filepath) {
 	}
 
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
-	nodeData = NodeData(mesh.nodes.size());
+	data = ComputationData(mesh.nodes.size());
 }
 void writeData(std::string  &filepath, std::string  &origin, bool &pretty);
 void updateBoundaries(std::string  &filepath, bool &pretty);

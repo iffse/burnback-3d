@@ -24,12 +24,12 @@ struct Mesh {
 struct TetrahedraGeometry {
 	std::vector<std::array<double, 4>> solidAngle;
 	std::vector<std::array<double, 4>> triangleArea;
-	std::vector<std::array<std::array<double, 3>, 4>> normalVector;
+	std::vector<std::array<std::array<double, 3>, 4>> normal;
 
 TetrahedraGeometry() = default;
 TetrahedraGeometry(uint32_t size) {
 	solidAngle = triangleArea = std::vector<std::array<double, 4>>(size);
-	normalVector = std::vector<std::array<std::array<double, 3>, 4>>(size);
+	normal = std::vector<std::array<std::array<double, 3>, 4>>(size);
 	}
 };
 
@@ -40,15 +40,15 @@ struct Boundary {
 	std::string description;
 };
 
-struct NodeData {
+struct ComputationData {
 	std::vector<double> uVertex;
 	std::vector<double> recession;
 	std::vector<std::array<double, 3>> duVariable;
 	std::vector<std::array<double, 3>> duVertex;
 	std::vector<std::array<double, 2>> flux;
 
-	NodeData() = default;
-	NodeData(uint32_t size) {
+	ComputationData() = default;
+	ComputationData(uint32_t size) {
 		uVertex = recession = std::vector<double>(size);
 		duVariable = duVertex = std::vector<std::array<double, 3>>(size);
 		flux = std::vector<std::array<double, 2>>(size);
