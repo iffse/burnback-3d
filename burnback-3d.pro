@@ -3,11 +3,11 @@ QT += quick
 QT += widgets
 CONFIG += c++17
 
+QMAKE_LINK=clang++
+QMAKE_CXX = clang++
 CONFIG(sanitizer) {
 	message("Sanitizer enabled")
 	CONFIG += sanitizer sanitize_address sanitize_undefined sanitize_leak
-	QMAKE_LINK=clang++
-	QMAKE_CXX = clang++
 }
 
 
@@ -30,11 +30,13 @@ HEADERS += \
 	./src/headers/types.h \
 	./src/headers/globals.h \
 	./src/headers/iosystem.h \
-	./src/headers/operations.h
+	./src/headers/operations.h \
+	./src/headers/interface.h
 SOURCES += \
 	./src/main.cpp \
 	./src/iosystem.cpp \
-	./src/operations.cpp
+	./src/operations.cpp \
+	./src/interface.cpp
 RESOURCES += src-qml/qml.qrc
 
 # Default rules for deployment.

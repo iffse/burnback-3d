@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace Vectors {
+namespace Vectors {//{{{
 template <typename T>
 auto crossProduct(const T &a, const T &b) {
 	T result;
@@ -17,7 +17,7 @@ auto crossProduct(const T &a, const T &b) {
 };
 template <typename T>
 auto scalarProduct(const T &a, const T &b) {
-	double result = 0.0;
+	auto result = 0.0;
 	for (uint i = 0; i < a.size(); ++i)
 		result += a[i] * b[i];
 	return result;
@@ -51,10 +51,18 @@ auto substraction(const T &a, const T &b) {
 		result[i] = a[i] - b[i];
 	return result;
 };
+template <typename T>
+auto multiplication(const T &a, const double &b) {
+	T result;
+	for (uint i = 0; i < a.size(); ++i)
+		result[i] = a[i] * b;
+	return result;
+};
 }
 using namespace Vectors;
+//}}}
 
-namespace Geometry {
+namespace Geometry {//{{{
 
 void computeGeometry() {
 	timeStep = 0;
@@ -107,8 +115,9 @@ void computeGeometry() {
 	timeStep *= 2 * input.cfl / 6;
 }
 }
+//}}}
 
-namespace Tetrahedra {
+namespace Tetrahedra {//{{{
 void computeMeanGradient() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &vertexO = mesh.tetrahedra[tetrahedra][0];
@@ -126,10 +135,6 @@ void computeMeanGradient() {
 		const auto &vertexBCoord = mesh.nodes[vertexB];
 		const auto &vertexCCoord = mesh.nodes[vertexC];
 
-		const auto OA = substraction(vertexOCoord, vertexACoord);
-		const auto OB = substraction(vertexOCoord, vertexBCoord);
-		const auto OC = substraction(vertexOCoord, vertexCCoord);
-
 		auto gradient = array<double, 3>();
 		auto coordinates = array<array<double, 3>, 4>{{
 			{vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
@@ -146,51 +151,89 @@ void computeMeanGradient() {
 			auto r14 = substraction(sCoord[3], sCoord[0]);
 			gradient[index] = scalarProduct(crossProduct(r12, r13), r14) / tetrahedraGeometry.jacobiDeterminant[tetrahedra];
 		};
-		computationData.duVariable[tetrahedra] = summation(computationData.duVertex[vertexO], gradient);
+		computationData.gradient[tetrahedra] = summation(computationData.hamiltonArg[vertexO], gradient);
 	}
 }
 void computeFluxes() {
-	// uVertex, argument of the hamiltonian flux
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
-		const auto &duVariable = computationData.duVariable[tetrahedra];
-		for (auto &node: mesh.tetrahedra[tetrahedra]) {
+		const auto &gradient = computationData.gradient[tetrahedra];
+		for (uint node = 0; node < 4; ++node) {
 			const auto &solidAngle = tetrahedraGeometry.solidAngle[tetrahedra][node];
-			auto &duVertex = computationData.duVertex[node];
-			duVertex = {
-				solidAngle * duVariable[0] + duVertex[0],
-				solidAngle * duVariable[1] + duVertex[1],
-				solidAngle * duVariable[2] + duVertex[2]
+			auto &hamiltonArg = computationData.hamiltonArg[node];
+			hamiltonArg = {
+				hamiltonArg[0] + solidAngle * gradient[0],
+				hamiltonArg[1] + solidAngle * gradient[1],
+				hamiltonArg[2] + solidAngle * gradient[2]
 			};
 		}
 	}
-	for (auto &duVertex: computationData.duVertex)
+	for (auto &duVertex: computationData.hamiltonArg)
 		for (auto &value: duVertex)
 			value /= 4 * M_PI;
 
 	// diffusive flux
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
-		const auto &duVariable = computationData.duVariable[tetrahedra];
+		const auto &gradient = computationData.gradient[tetrahedra];
 		uint nodeIndex = 0;
 		for (auto &node: mesh.tetrahedra[tetrahedra]) {
 			const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][nodeIndex];
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][nodeIndex];
-			computationData.flux[node][1] += area * scalarProduct(duVariable, normal);
+			computationData.flux[node][1] += area * scalarProduct(gradient, normal);
 			nodeIndex++;
 		}
 	}
 
 	for (auto &flux: computationData.flux)
-		flux[1] /= 4 * M_PI;
-}
-void computeMinimumTimeStep() {
+		flux[1] /= (4 * M_PI);
 }
 }
+//}}}
 
-namespace Triangles {
-void ApplyBoundaryConditions();
-}
+namespace Triangles {//{{{
+void ApplyBoundaryConditions(){
+	uint nodeIndex = 0;
+	for (auto &boundary: boundaryConditions) {
+		auto &type = boundaries[boundary].type;
+		auto &value = boundaries[boundary].value[0];
+		auto &valueSup = boundaries[boundary].value[1];
+		auto &flux = computationData.flux[nodeIndex];
+		auto &hamiltonArg = computationData.hamiltonArg[nodeIndex];
 
-namespace Nodes {
-void computeResults();
+		switch (type) {
+			case 0: // no condition
+				flux[0] = 1 - magnitude(hamiltonArg);
+				break;
+			case 1: // inlet
+				flux[0] = 0;
+				flux[1] = 0;
+				break;
+			case 2: // outlet
+				flux[0] = 1 - magnitude(hamiltonArg);
+				break;
+			case 3: { // symmetry
+				auto symmetryVector = array<double, 3>{cos(valueSup) * cos(value), cos(valueSup) * sin(value), sin(valueSup)};
+				hamiltonArg = multiplication(
+					crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector),2
+				);
+				flux[0] = 1 - magnitude(hamiltonArg);
+				break;
+			}
+			default:
+				break;
+				
+		}
+	}
 }
+}
+//}}}
 
+namespace Nodes {//{{{	
+void computeResults() {
+	for (uint node = 0; node < mesh.nodes.size(); ++node) {
+		auto &uVertex = computationData.uVertex[node];
+		auto &flux = computationData.flux[node];
+		uVertex += timeStep * (flux[0] + input.diffusiveWeight * flux[1]);
+	}
+}
+}
+//}}}

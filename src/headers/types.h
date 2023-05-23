@@ -3,22 +3,21 @@
 #include <array>
 #include <vector>
 #include <map>
-#include <cstdint>
 #include <string>
 
 struct Input {
 	double uInitial;
 	bool resume;
 	double cfl;
-	uint32_t targetIter;
+	uint targetIter;
 	double diffusiveWeight;
-	uint32_t diffusiveMethod;
+	uint diffusiveMethod;
 };
 
 struct Mesh {
 	std::vector<std::array<double, 3>> nodes;
-	std::vector<std::array<int, 3>> triangles;
-	std::vector<std::array<int, 4>> tetrahedra;
+	std::vector<std::array<uint, 3>> triangles;
+	std::vector<std::array<uint, 4>> tetrahedra;
 };
 
 struct TetrahedraGeometry {
@@ -28,7 +27,7 @@ struct TetrahedraGeometry {
 	std::vector<double> jacobiDeterminant; // equal to 6 times the volume of the tetrahedra
 
 TetrahedraGeometry() = default;
-TetrahedraGeometry(uint32_t size) {
+TetrahedraGeometry(uint size) {
 	solidAngle = triangleArea = std::vector<std::array<double, 4>>(size);
 	normal = std::vector<std::array<std::array<double, 3>, 4>>(size);
 	jacobiDeterminant = std::vector<double>(size);
@@ -37,22 +36,23 @@ TetrahedraGeometry(uint32_t size) {
 
 
 struct Boundary {
-	uint32_t type;
-	double value;
+	uint type;
+	std::array<double, 2> value;
 	std::string description;
 };
 
 struct ComputationData {
 	std::vector<double> uVertex;
 	std::vector<double> recession;
-	std::vector<std::array<double, 3>> duVariable;
-	std::vector<std::array<double, 3>> duVertex;
+	std::vector<std::array<double, 3>> gradient;
+	std::vector<std::array<double, 3>> hamiltonArg;
 	std::vector<std::array<double, 2>> flux;
 
 	ComputationData() = default;
-	ComputationData(uint32_t size) {
-		uVertex = recession = std::vector<double>(size);
-		duVariable = duVertex = std::vector<std::array<double, 3>>(size);
-		flux = std::vector<std::array<double, 2>>(size);
+	ComputationData(uint32_t nodes, uint32_t tetrahedra) {
+		uVertex = recession = std::vector<double>(nodes);
+		gradient = std::vector<std::array<double, 3>>(nodes);
+		hamiltonArg = std::vector<std::array<double, 3>>(tetrahedra);
+		flux = std::vector<std::array<double, 2>>(nodes);
 	}
 };

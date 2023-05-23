@@ -82,7 +82,7 @@ for field in mesh.field_data:
 			conditions['boundary'].append({
 				'tag': condition_code,
 				'type': 'inlet',
-				'value': float(condition[1]) if len(condition) > 1 else 0,
+				'value': [float(condition[1]), 0] if len(condition) > 1 else [0, 0],
 				'description': condition[2:] if len(condition) > 2 else ''
 			})
 		case 'outlet':
@@ -95,8 +95,8 @@ for field in mesh.field_data:
 			conditions['boundary'].append({
 				'tag': condition_code,
 				'type': 'symmetry',
-				'value': float(condition[1]) if len(condition) > 1 else 0,
-				'description': condition[2:] if len(condition) > 2 else ''
+				'value': [float(condition[1]), float(condition[2])] if len(condition) > 2 else [0, 0],
+				'description': condition[3:] if len(condition) > 3 else ''
 			})
 		case 'condition':
 			conditions['boundary'].append({
@@ -107,7 +107,7 @@ for field in mesh.field_data:
 
 print('Assining conditions to boundaries and recession nodes...')
 for cell in mesh.cell_data_dict['gmsh:physical']:
-	if cell in boundaries:
+	if cell == 'triangle':
 		conditions[cell] = mesh.cell_data_dict['gmsh:physical'][cell].tolist()
 
 if recessions != {}:

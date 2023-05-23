@@ -36,6 +36,7 @@ ScrollView {
 					nameFilters: ["Mesh files (*.json *.dat)", "All files (*)"]
 					onAccepted: {
 						meshLabel.text = ("Current selection:\n" + basename(fileUrl.toString()))
+						actions.readMesh(fileUrl)
 					}
 					function basename(path) {
 						path.slice(path.lastIndexOf("\\") + 1)
@@ -54,20 +55,21 @@ ScrollView {
 				width: parent.width
 
 				LabelInput {
-					text: "Number of areas"
-					placeholderText: "Enter a number"
-					toolTipText: "Influence the number of segments used to draw the geometry of the solution"
-					objName: "areas"
-					decimals: true
-				}
-
-				LabelInput {
 					text: "Initial condition"
 					placeholderText: "Enter a number"
 					toolTipText: "The initial value used for the model"
 					objName: "initialCondition"
 					defaultInput: "0"
 					decimals: true
+				}
+
+				CheckBox {
+					objectName: "resume"
+					text: qsTr("Resume")
+					ToolTip.text: qsTr("Mark this checkbox if you want to resume a previous computation")
+					ToolTip.visible: hovered
+					ToolTip.delay: 500
+					hoverEnabled: true
 				}
 			}
 		}
@@ -83,31 +85,19 @@ ScrollView {
 				LabelInput {
 					text: "CFL"
 					placeholderText: "Enter a number"
-					toolTipText: "Adimensional time. (CFL = c * dt / dx = Speed of sound / Element size)"
+					toolTipText: "Non-dimensional time. The smaller the more accurate the solution but the longer the computation time\n\nUse a value between 0 and 0.5 (both non-inclusive) for a stable and monotonous solution\nException: Zhang and Shu's scheme is stable for CFL < 2.5 (empirical value) when the diffusive weight is 1. Resulting in a very fast computation with high precision"
 					objName: "cfl"
+					defaultInput: "1"
 					decimals: true
 				}
 
 				LabelInput {
-					text: "Minimum iterations"
+					text: "Target iterations"
 					placeholderText: "Enter a number"
-					toolTipText: "Minimum number of iterations for the computation"
-					objName: "minIter"
-				}
-
-				LabelInput {
-					text: "Maximum iterations"
-					placeholderText: "Enter a number"
-					toolTipText: "Maximum number of iterations for the computation"
-					objName: "maxIter"
-				}
-
-				LabelInput {
-					text: "Tolerance"
-					placeholderText: "Enter a number"
-					toolTipText: "Maximum error admitted for the computation"
-					objName: "tolerance"
-					decimals: true
+					toolTipText: "Maximum number of iterations to perform\n\nDefault: 300"
+					defaultInput: "300"
+					objName: "targetIter"
+					negative: false
 				}
 			}
 		}

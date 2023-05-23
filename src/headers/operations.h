@@ -5,7 +5,6 @@ void computeGeometry();
 namespace Tetrahedra {
 void computeMeanGradient();
 void computeFluxes();
-void computeMinimumTimeStep();
 }
 
 namespace Triangles {

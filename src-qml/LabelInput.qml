@@ -6,10 +6,12 @@ Column {
 	spacing: 0
 	property string text: ""
 	property string defaultInput: ""
+	property string input: inputField.text
 	property string objName: ""
 	property string placeholderText: ""
 	property string toolTipText: ""
 	property bool decimals: false
+	property bool negative: true
 	width: parent.width
 
 	Label {
@@ -26,13 +28,18 @@ Column {
 	}
 
 	TextField {
+		id: inputField
+		property var intValidator: IntValidator {
+			bottom: parent.negative ? -Infinity : 0
+		}
+		property var doubleValidator: DoubleValidator {
+			bottom: parent.negative ? -Infinity : 0
+		}
 		placeholderText: parent.placeholderText
 		selectByMouse: true
 		objectName: parent.objName
 		width: parent.width
 		text: parent.defaultInput
-		// validator: RegExpValidator {
-		// 	regExp: parent.decimals ? /^-?\d*\.?\d*$/ : /^-?\d*$/
-		// }
+		validator: parent.decimals ? doubleValidator : intValidator
 	}
 }

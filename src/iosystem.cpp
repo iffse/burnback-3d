@@ -26,7 +26,7 @@ void readInput() {//{{{
 }
 //}}}
 
-namespace Json {
+namespace Json {//{{{
 void readMesh(std::string &filepath) {
 	fstream file(filepath);
 	json json;
@@ -50,24 +50,52 @@ void readMesh(std::string &filepath) {
 
 	auto &conditions = json["conditions"];
 	try {
+		boundaries.clear();
 		for (auto &boundary : conditions["boundary"]) {
 			auto &tag = boundary["tag"];
+			if (tag < 1)
+				throw std::invalid_argument("Boundary tag must be greater than 0");
 			auto &type = boundary["type"];
-			auto value = boundary.value("value", 0.0);
+			auto value = boundary.value("value", std::array<double, 2>({0, 0}));
 			auto description = boundary.value("description", "");
 
 			const vector<string> boundaryTypes = {"inlet", "outlet", "symmetry"};
-			if (find(boundaryTypes.begin(), boundaryTypes.end(), type) == boundaryTypes.end()) {
-				type = "inlet";
-				value = 0.0;
+			// check if a type is in boundaryTypes, and use switch to assign a value
+			switch (find(boundaryTypes.begin(), boundaryTypes.end(), type) - boundaryTypes.begin()) {
+				case 0:
+					break;
+				case 1:
+					value = {0, 0};
+					break;
+				case 2:
+					value[0] *= M_PI / 180;
+					value[1] *= M_PI / 180;
+					break;
+				default:
+					type = "inlet";
+					value = {0, 0};
+					break;
 			}
-			if (type == "outlet")
-				value = 0.0;
-			else if (type == "symmetry")
-				value *= M_PI / 180;
 
 			uint typeInt = find(boundaryTypes.begin(), boundaryTypes.end(), type) - boundaryTypes.begin() + 1;
 			boundaries.insert(pair<int, Boundary>(tag, Boundary{typeInt, value, description}));
+		}
+		boundaries.insert(pair<int, Boundary>(0, Boundary{0, {0, 0}, ""}));
+		boundaryConditions = vector<uint>(mesh.nodes.size());
+		auto triangleIndex = 0;
+		for (auto &condition: conditions["triangle"]) {
+			auto &triangle = mesh.triangles[triangleIndex];
+			for (auto &node: triangle) {
+				auto &current = boundaryConditions[node];
+				if (current == 0) {
+					current = condition;
+					continue;
+				}
+				auto &type = boundaries[current].type;
+				auto &newType = boundaries[condition].type;
+				if (newType < type)
+					current = condition;
+			}
 		}
 	} catch(...) {
 		throw std::invalid_argument("Unable to read boundary conditions from JSON file. Missing boundary field or wrong format?");
@@ -75,9 +103,8 @@ void readMesh(std::string &filepath) {
 	}
 
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
-	data = ComputationData(mesh.nodes.size());
 }
 void writeData(std::string  &filepath, std::string  &origin, bool &pretty);
 void updateBoundaries(std::string  &filepath, bool &pretty);
-}
+}//}}}
 
