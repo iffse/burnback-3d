@@ -85,7 +85,8 @@ void readMesh(std::string &filepath) {
 		auto triangleIndex = 0;
 		for (auto &condition: conditions["triangle"]) {
 			auto &triangle = mesh.triangles[triangleIndex];
-			for (auto &node: triangle) {
+			for (auto &_node: triangle) {
+				auto node = _node - 1;
 				auto &current = boundaryConditions[node];
 				if (current == 0) {
 					current = condition;
@@ -96,6 +97,7 @@ void readMesh(std::string &filepath) {
 				if (newType < type)
 					current = condition;
 			}
+			triangleIndex++;
 		}
 	} catch(...) {
 		throw std::invalid_argument("Unable to read boundary conditions from JSON file. Missing boundary field or wrong format?");

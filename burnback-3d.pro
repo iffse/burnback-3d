@@ -7,14 +7,16 @@ QMAKE_LINK=clang++
 QMAKE_CXX = clang++
 CONFIG(sanitizer) {
 	message("Sanitizer enabled")
-	CONFIG += sanitizer sanitize_address sanitize_undefined sanitize_leak
+	CONFIG += sanitizer sanitize_address sanitize_undefined
 }
 
 
 CONFIG(debug, debug|release) {
 	DESTDIR = target/debug
+	DEFINES += DEBUG
 } else {
 	DESTDIR = target/release
+	DEFINES += RELEASE
 }
 
 INCLUDEPATH += include

@@ -141,11 +141,9 @@ void Actions::stop() {
 
 void Actions::worker() {
 	#ifdef DEBUG
-	std::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 	#endif
 	if (!input.resume) {
-		emit newOutput("--> Creating connectivity matrix");
-
 		currentIter = 0;
 		errorIter.clear();
 		Geometry::computeGeometry();
@@ -204,7 +202,7 @@ void Actions::worker() {
 
 	if (linesToPrint != "") {
 		emit newOutput(linesToPrint);
-		emit updateProgress(currentIter + 1, input.targetIter);
+		emit updateProgress(currentIter, input.targetIter);
 	}
 
 	emit newOutput("--> Subiteration ended");

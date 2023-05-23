@@ -43,16 +43,15 @@ struct Boundary {
 
 struct ComputationData {
 	std::vector<double> uVertex;
-	std::vector<double> recession;
 	std::vector<std::array<double, 3>> gradient;
 	std::vector<std::array<double, 3>> hamiltonArg;
 	std::vector<std::array<double, 2>> flux;
 
 	ComputationData() = default;
-	ComputationData(uint32_t nodes, uint32_t tetrahedra) {
-		uVertex = recession = std::vector<double>(nodes);
-		gradient = std::vector<std::array<double, 3>>(nodes);
-		hamiltonArg = std::vector<std::array<double, 3>>(tetrahedra);
+	ComputationData(int nodes, int tetrahedra) {
+		uVertex = std::vector<double>(nodes);
+		gradient = std::vector<std::array<double, 3>>(tetrahedra);
+		hamiltonArg = std::vector<std::array<double, 3>>(nodes);
 		flux = std::vector<std::array<double, 2>>(nodes);
 	}
 };
