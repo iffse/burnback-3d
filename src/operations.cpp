@@ -8,24 +8,48 @@
 using namespace std;
 
 namespace Vectors {
-auto crossProduct(const array<double, 3> &a, const array<double, 3> &b) {
-	return array<double, 3>{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
+template <typename T>
+auto crossProduct(const T &a, const T &b) {
+	T result;
+	for (uint i = 0; i < a.size(); ++i)
+		result[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
+	return result;
 };
-auto scalarProduct(const array<double, 3> &a, const array<double, 3> &b) {
-	return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+template <typename T>
+auto scalarProduct(const T &a, const T &b) {
+	double result = 0.0;
+	for (uint i = 0; i < a.size(); ++i)
+		result += a[i] * b[i];
+	return result;
 };
-auto magnitude(const array<double, 3> &a) {
-	return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+template <typename T>
+auto magnitude(const T &a) {
+	double result = 0.0;
+	for (uint i = 0; i < a.size(); ++i)
+		result += a[i] * a[i];
+	return sqrt(result);
 };
-auto normalization(const array<double, 3> &a) {
+template <typename T>
+auto normalization(const T &a) {
+	T result;
 	auto mag = magnitude(a);
-	return array<double, 3>{a[0] / mag, a[1] / mag, a[2] / mag};
+	for (uint i = 0; i < a.size(); ++i)
+		result[i] = a[i] / mag;
+	return result;
 };
-auto summation(const array<double, 3> &a, const array<double, 3> &b) {
-	return array<double, 3>{a[0] + b[0], a[1] + b[1], a[2] + b[2]};
+template <typename T>
+auto summation(const T &a, const T &b) {
+	T result;
+	for (uint i = 0; i < a.size(); ++i)
+		result[i] = a[i] + b[i];
+	return result;
 };
-auto substraction(const array<double, 3> &a, const array<double, 3> &b) {
-	return array<double, 3>{a[0] - b[0], a[1] - b[1], a[2] - b[2]};
+template <typename T>
+auto substraction(const T &a, const T &b) {
+	T result;
+	for (uint i = 0; i < a.size(); ++i)
+		result[i] = a[i] - b[i];
+	return result;
 };
 }
 using namespace Vectors;
