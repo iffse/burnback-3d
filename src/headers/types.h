@@ -25,11 +25,13 @@ struct TetrahedraGeometry {
 	std::vector<std::array<double, 4>> solidAngle;
 	std::vector<std::array<double, 4>> triangleArea;
 	std::vector<std::array<std::array<double, 3>, 4>> normal;
+	std::vector<double> jacobiDeterminant; // equal to 6 times the volume of the tetrahedra
 
 TetrahedraGeometry() = default;
 TetrahedraGeometry(uint32_t size) {
 	solidAngle = triangleArea = std::vector<std::array<double, 4>>(size);
 	normal = std::vector<std::array<std::array<double, 3>, 4>>(size);
+	jacobiDeterminant = std::vector<double>(size);
 	}
 };
 

@@ -57,10 +57,12 @@ using namespace Vectors;
 namespace Geometry {
 
 void computeGeometry() {
+	timeStep = 0;
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		auto &omega = tetrahedraGeometry.solidAngle[tetrahedra];
 		auto &normal = tetrahedraGeometry.normal[tetrahedra];
 		auto &area = tetrahedraGeometry.triangleArea[tetrahedra];
+		auto &jacobi = tetrahedraGeometry.jacobiDeterminant[tetrahedra];
 
 		for (uint vertex = 0; vertex < 4; ++vertex) {
 			const auto &vertexO = mesh.tetrahedra[tetrahedra][vertex];
@@ -96,8 +98,13 @@ void computeGeometry() {
 				normal[vertex] = normalization(crossProduct(OB, OA));
 
 			area[vertex] = magnitude(crossProduct(OA, OB)) / 2;
+			if (vertex == 0)
+				jacobi = scalarProduct(OA, crossProduct(OB, OC));
+			if (jacobi / area[vertex] < timeStep)
+				timeStep = jacobi / area[vertex];
 		}
 	}
+	timeStep *= 2 * input.cfl / 6;
 }
 }
 
@@ -123,16 +130,6 @@ void computeMeanGradient() {
 		const auto OB = substraction(vertexOCoord, vertexBCoord);
 		const auto OC = substraction(vertexOCoord, vertexCCoord);
 
-		// FIXME: jacobian can be calculated only once per tetrahedra
-		const auto jacoby = scalarProduct(crossProduct(OA, OB), OC);
-		// use this volume to also calculate the minimum height
-		timeStep = 0;
-		for (uint index = 0; index < 4; ++index) {
-			const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][index];
-			if (jacoby / area < timeStep)
-				timeStep = jacoby / area;
-		}
-
 		auto gradient = array<double, 3>();
 		auto coordinates = array<array<double, 3>, 4>{{
 			{vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
@@ -147,7 +144,7 @@ void computeMeanGradient() {
 			auto r12 = substraction(sCoord[1], sCoord[0]);
 			auto r13 = substraction(sCoord[2], sCoord[0]);
 			auto r14 = substraction(sCoord[3], sCoord[0]);
-			gradient[index] = scalarProduct(crossProduct(r12, r13), r14) / jacoby;
+			gradient[index] = scalarProduct(crossProduct(r12, r13), r14) / tetrahedraGeometry.jacobiDeterminant[tetrahedra];
 		};
 		computationData.duVariable[tetrahedra] = summation(computationData.duVertex[vertexO], gradient);
 	}
