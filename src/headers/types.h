@@ -22,15 +22,16 @@ struct Mesh {
 
 struct TetrahedraGeometry {
 	std::vector<std::array<double, 4>> solidAngle;
+	std::vector<std::array<double, 4>> vertexWeight;
 	std::vector<std::array<double, 4>> triangleArea;
 	std::vector<std::array<std::array<double, 3>, 4>> normal;
-	std::vector<double> jacobiDeterminant; // equal to 6 times the volume of the tetrahedra
+	std::vector<double> jacobiDeterminant; // equal to 6 times the volume (signed) of the tetrahedra
 
 TetrahedraGeometry() = default;
-TetrahedraGeometry(uint size) {
-	solidAngle = triangleArea = std::vector<std::array<double, 4>>(size);
-	normal = std::vector<std::array<std::array<double, 3>, 4>>(size);
-	jacobiDeterminant = std::vector<double>(size);
+TetrahedraGeometry(uint tetrahedra) {
+	solidAngle = triangleArea = vertexWeight = std::vector<std::array<double, 4>>(tetrahedra);
+	normal = std::vector<std::array<std::array<double, 3>, 4>>(tetrahedra);
+	jacobiDeterminant = std::vector<double>(tetrahedra);
 	}
 };
 

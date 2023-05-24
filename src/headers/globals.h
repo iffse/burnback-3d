@@ -11,6 +11,7 @@ inline QObject* root;
 inline Input input;
 inline Mesh mesh;
 inline TetrahedraGeometry tetrahedraGeometry;
+inline std::vector<double> angleTotal;
 inline std::map<uint, Boundary> boundaries;
 inline std::vector<uint> boundaryConditions;
 inline ComputationData computationData;

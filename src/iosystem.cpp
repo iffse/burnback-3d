@@ -105,6 +105,7 @@ void readMesh(std::string &filepath) {
 	}
 
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
+	angleTotal = std::vector<double>(mesh.nodes.size());
 }
 void writeData(std::string  &filepath, std::string  &origin, bool &pretty);
 void updateBoundaries(std::string  &filepath, bool &pretty);

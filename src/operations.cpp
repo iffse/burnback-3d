@@ -70,7 +70,7 @@ namespace Geometry {//{{{
 
 void computeGeometry() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
-		auto &omega = tetrahedraGeometry.solidAngle[tetrahedra];
+		auto &solidAngle = tetrahedraGeometry.solidAngle[tetrahedra];
 		auto &normal = tetrahedraGeometry.normal[tetrahedra];
 		auto &area = tetrahedraGeometry.triangleArea[tetrahedra];
 		auto &jacobi = tetrahedraGeometry.jacobiDeterminant[tetrahedra];
@@ -100,28 +100,41 @@ void computeGeometry() {
 			const auto sOBCA = scalarProduct(OB, OC) * magnitudeOA;
 			const auto sOCAB = scalarProduct(OC, OA) * magnitudeOB;
 
-			omega[vertex] = 2 * atan2(tripleProduct, sOABC + sOBCA + sOCAB + magnitudeOABC);
+			solidAngle[vertex] = 2 * atan2(tripleProduct, sOABC + sOBCA + sOCAB + magnitudeOABC);
 			// cpp's atan2 returns values between -pi and pi,
 			// solid angle is always positive, so we need to add 2pi to negative values
-			if (omega[vertex] < 0)
-				omega[vertex] += 2 * M_PI;
+			if (solidAngle[vertex] < 0)
+				solidAngle[vertex] *= -1;
+			angleTotal[nodeO] += solidAngle[vertex];
+				// solidAngle[vertex] += 2 * M_PI;
 
 			// Calculating normal vector
-			normal[vertex] = normalization(crossProduct(OA, OB));
+			const auto AB = substraction(nodeACoord, nodeBCoord);
+			const auto AC = substraction(nodeACoord, nodeCCoord);
+			auto _normal = crossProduct(AB, AC);
+			normal[vertex] = normalization(_normal);
 			// Check if normal vector is pointing outwards (going away from O)
 			if (scalarProduct(normal[vertex], OA) < 0)
-				normal[vertex] = normalization(crossProduct(OB, OA));
+				normal[vertex] = multiplication(normal[vertex], -1);
 
-			area[vertex] = magnitude(crossProduct(OA, OB)) / 2;
+			area[vertex] = magnitude(_normal) / 2;
+
 			if (vertex == 0)
-				// jacobi determinant is six times the volume of the tetrahedron
-				// it must be positive
-				jacobi = abs(scalarProduct(OA, crossProduct(OB, OC)));
-			if (tetrahedra == 0 || (jacobi / area[vertex] < timeStep))
-				timeStep = jacobi / area[vertex];
+				jacobi = scalarProduct(OA, crossProduct(OB, OC));
+
+			auto jacobiAbs = abs(jacobi);
+			if (tetrahedra == 0 || (jacobiAbs / area[vertex] < timeStep))
+				timeStep = jacobiAbs / area[vertex];
+		}
+	}
+	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
+		for (uint vertex = 0; vertex < 4; ++vertex) {
+			const auto &node = mesh.tetrahedra[tetrahedra][vertex] - 1;
+			tetrahedraGeometry.vertexWeight[tetrahedra][vertex] = tetrahedraGeometry.solidAngle[tetrahedra][vertex] / angleTotal[node];
 		}
 	}
 	timeStep *= 2 * input.cfl / 6;
+	auto maxArea = std::max_element(tetrahedraGeometry.triangleArea.begin(), tetrahedraGeometry.triangleArea.end());
 }
 }
 //}}}
@@ -168,30 +181,24 @@ void computeFluxes() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
 		for (uint vertex = 0; vertex < 4; ++vertex) {
-			const auto &solidAngle = tetrahedraGeometry.solidAngle[tetrahedra][vertex];
-			auto &hamiltonArg = computationData.hamiltonArg[vertex];
-			hamiltonArg = summation(hamiltonArg, multiplication(gradient, solidAngle));
+			const auto node = mesh.tetrahedra[tetrahedra][vertex] - 1;
+			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertex];
+			auto &hamiltonArg = computationData.hamiltonArg[node];
+			hamiltonArg = summation(hamiltonArg, multiplication(gradient, weight));
 		}
 	}
-	for (auto &duVertex: computationData.hamiltonArg)
-	for (auto &value: duVertex)
-	value /= 4 * M_PI;
 
 	// diffusive flux
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
-		uint nodeIndex = 0;
+		uint vertexIndex = 0;
 		for (auto &_node: mesh.tetrahedra[tetrahedra]) {
-			const auto &node = _node - 1;
-			const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][nodeIndex];
-			const auto &normal = tetrahedraGeometry.normal[tetrahedra][nodeIndex];
+			const auto node = _node - 1;
+			const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][vertexIndex];
+			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
 			computationData.flux[node][1] += area * scalarProduct(gradient, normal);
-			nodeIndex++;
 		}
 	}
-
-	for (auto &flux: computationData.flux)
-	flux[1] /= (4 * M_PI);
 }
 }
 //}}}
@@ -199,16 +206,17 @@ void computeFluxes() {
 namespace Triangles {//{{{
 void ApplyBoundaryConditions(){
 	uint nodeIndex = 0;
-	for (auto &boundary: boundaryConditions) {
-		auto &type = boundaries[boundary].type;
-		auto &value = boundaries[boundary].value[0];
-		auto &valueSup = boundaries[boundary].value[1];
+	for (auto &node: boundaryConditions) {
+		auto &type = boundaries[node].type;
+		auto &value = boundaries[node].value[0];
+		auto &valueSup = boundaries[node].value[1];
 		auto &flux = computationData.flux[nodeIndex];
 		auto &hamiltonArg = computationData.hamiltonArg[nodeIndex];
 
 		switch (type) {
 			case 0: // no condition
 				flux[0] = 1 - magnitude(hamiltonArg);
+				flux[1] /= angleTotal[nodeIndex];
 				break;
 			case 1: // inlet
 				flux[0] = 0;
@@ -216,6 +224,7 @@ void ApplyBoundaryConditions(){
 				break;
 			case 2: // outlet
 				flux[0] = 1 - magnitude(hamiltonArg);
+				flux[1] /= angleTotal[nodeIndex];
 				break;
 			case 3: { // symmetry
 				auto symmetryVector = array<double, 3>{cos(valueSup) * cos(value), cos(valueSup) * sin(value), sin(valueSup)};
@@ -223,6 +232,7 @@ void ApplyBoundaryConditions(){
 					crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector),2
 				);
 				flux[0] = 1 - magnitude(hamiltonArg);
+				flux[1] /= angleTotal[nodeIndex];
 				break;
 			}
 			default:
