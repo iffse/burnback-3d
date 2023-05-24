@@ -1,4 +1,4 @@
-Merge "cylinder.stl";
+Merge "cube.stl";
 
 DefineConstant[
 	angle = {
@@ -19,8 +19,8 @@ ClassifySurfaces{
 
 CreateGeometry;
 
-Physical Surface("inlet 0", 6) = {4};
-Physical Surface("outlet", 7) = {2, 3};
+Physical Surface("inlet 0", 6) = {2};
+Physical Surface("outet", 7) = {5, 7, 6, 3, 4};
 
 Surface Loop(1) = Surface{:};
 Volume(1) = {1};
