@@ -55,28 +55,15 @@ void readMesh(std::string &filepath) {
 			auto &tag = boundary["tag"];
 			if (tag < 1)
 				throw std::invalid_argument("Boundary tag must be greater than 0");
-			auto &type = boundary["type"];
-			auto value = boundary.value("value", std::array<double, 2>({0, 0}));
-			auto description = boundary.value("description", "");
+			string type = boundary.value("type", "inlet") ;
+			array<double, 2> value = boundary.value("value", std::array<double, 2>({0, 0}));
+			string description = boundary.value("description", "");
 
 			const vector<string> boundaryTypes = {"inlet", "outlet", "symmetry"};
-			// check if a type is in boundaryTypes, and use switch to assign a value
-			switch (find(boundaryTypes.begin(), boundaryTypes.end(), type) - boundaryTypes.begin()) {
-				case 0:
-					break;
-				case 1:
-					value = {0, 0};
-					break;
-				case 2:
-					value[0] *= M_PI / 180;
-					value[1] *= M_PI / 180;
-					break;
-				default:
-					type = "inlet";
-					value = {0, 0};
-					break;
+			if (type == "symmetry") {
+				value[0] *= M_PI / 180;
+				value[1] *= M_PI / 180;
 			}
-
 			uint typeInt = find(boundaryTypes.begin(), boundaryTypes.end(), type) - boundaryTypes.begin() + 1;
 			boundaries.insert(pair<int, Boundary>(tag, Boundary{typeInt, value, description}));
 		}
@@ -107,7 +94,23 @@ void readMesh(std::string &filepath) {
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 	angleTotal = std::vector<double>(mesh.nodes.size());
 }
-void writeData(std::string  &filepath, std::string  &origin, bool &pretty);
+void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
+	json json;
+	json["uVertex"] = computationData.uVertex;
+	vector<double> x, y, z;
+	x = y = z = vector<double>(mesh.nodes.size());
+	for (uint i = 0; i < mesh.nodes.size(); i++) {
+		x[i] = mesh.nodes[i][0];
+		y[i] = mesh.nodes[i][1];
+		z[i] = mesh.nodes[i][2];
+	}
+	json["x"] = x;
+	json["y"] = y;
+	json["z"] = z;
+
+	ofstream file(filepath);
+	file << (pretty ? json.dump(4) : json.dump());
+}
 void updateBoundaries(std::string  &filepath, bool &pretty);
 }//}}}
 

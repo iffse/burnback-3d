@@ -145,9 +145,13 @@ void Actions::worker() {
 	#endif
 	if (!input.resume) {
 		currentIter = 0;
+		timeTotal = 0;
+		timeStep = 0;
 		errorIter.clear();
-		Geometry::computeGeometry();
+		tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
+		angleTotal = vector<double>(mesh.nodes.size());
 		computationData = ComputationData(mesh.nodes.size(), mesh.tetrahedra.size());
+		Geometry::computeGeometry();
 	}
 	emit newOutput("--> Starting subiteration loop");
 	if (currentIter < input.targetIter)
@@ -155,7 +159,6 @@ void Actions::worker() {
 
 	QString linesToPrint = "";
 	auto clock = std::chrono::system_clock::now();
-	timeTotal = 0;
 
 	for (; currentIter < input.targetIter; ++currentIter) {
 		Tetrahedra::computeMeanGradient();
@@ -212,8 +215,23 @@ void Actions::worker() {
 void Actions::afterWorker() {
 	root->findChild<QObject*>("runButton")->setProperty("text", "Run");
 
+	auto nodes = vector<double>(mesh.nodes.size());
 	for (uint i = 0; i < mesh.nodes.size(); ++i) {
-		qDebug() << computationData.uVertex[i]; 
+		nodes[i] = mesh.nodes[i][2];
+	}
+
+	string filename = "results.json";
+	string origin = "";
+	bool pretty = true;
+	Json::writeData(filename, origin, pretty);
+
+
+	for (uint i = 0; i < mesh.nodes.size(); ++i) {
+		auto maxIndex = std::max_element(nodes.begin(), nodes.end()) - nodes.begin();
+		auto max = nodes[maxIndex];
+		auto maxValue = computationData.uVertex[maxIndex];
+		qDebug() << "Node" << maxIndex + 1 << "Height" << max << "Value" << maxValue << "Condition" << boundaryConditions[maxIndex] << "type" << boundaries[boundaryConditions[maxIndex]].type;
+		nodes[maxIndex] = -200;
 	}
 }
 

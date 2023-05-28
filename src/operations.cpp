@@ -76,19 +76,19 @@ void computeGeometry() {
 		auto &jacobi = tetrahedraGeometry.jacobiDeterminant[tetrahedra];
 
 		for (uint vertex = 0; vertex < 4; ++vertex) {
-			const auto &nodeO = mesh.tetrahedra[tetrahedra][vertex] - 1;
-			const auto &nodeA = mesh.tetrahedra[tetrahedra][(vertex + 1) % 4] - 1;
-			const auto &nodeB = mesh.tetrahedra[tetrahedra][(vertex + 2) % 4] - 1;
-			const auto &nodeC = mesh.tetrahedra[tetrahedra][(vertex + 3) % 4] - 1;
+			const auto nodeO = mesh.tetrahedra[tetrahedra][vertex] - 1;
+			const auto nodeA = mesh.tetrahedra[tetrahedra][(vertex + 1) % 4] - 1;
+			const auto nodeB = mesh.tetrahedra[tetrahedra][(vertex + 2) % 4] - 1;
+			const auto nodeC = mesh.tetrahedra[tetrahedra][(vertex + 3) % 4] - 1;
 
 			const auto &nodeOCoord = mesh.nodes[nodeO];
 			const auto &nodeACoord = mesh.nodes[nodeA];
 			const auto &nodeBCoord = mesh.nodes[nodeB];
 			const auto &nodeCCoord = mesh.nodes[nodeC];
 
-			const auto OA = substraction(nodeOCoord, nodeACoord);
-			const auto OB = substraction(nodeOCoord, nodeBCoord);
-			const auto OC = substraction(nodeOCoord, nodeCCoord);
+			const auto OA = substraction(nodeACoord, nodeOCoord);
+			const auto OB = substraction(nodeBCoord, nodeOCoord);
+			const auto OC = substraction(nodeCCoord, nodeOCoord);
 
 			// Calculating solid angle: Oosterom and Strackee algorithm
 			const auto tripleProduct = scalarProduct(OA, crossProduct(OB, OC));
@@ -100,17 +100,17 @@ void computeGeometry() {
 			const auto sOBCA = scalarProduct(OB, OC) * magnitudeOA;
 			const auto sOCAB = scalarProduct(OC, OA) * magnitudeOB;
 
-			solidAngle[vertex] = 2 * atan2(tripleProduct, sOABC + sOBCA + sOCAB + magnitudeOABC);
+			solidAngle[vertex] = abs(2 * atan2(tripleProduct, sOABC + sOBCA + sOCAB + magnitudeOABC));
 			// cpp's atan2 returns values between -pi and pi,
 			// solid angle is always positive, so we need to add 2pi to negative values
-			if (solidAngle[vertex] < 0)
-				solidAngle[vertex] *= -1;
+			// if (solidAngle[vertex] < 0)
+			// 	solidAngle[vertex] *= -1;
 			angleTotal[nodeO] += solidAngle[vertex];
 				// solidAngle[vertex] += 2 * M_PI;
 
 			// Calculating normal vector
-			const auto AB = substraction(nodeACoord, nodeBCoord);
-			const auto AC = substraction(nodeACoord, nodeCCoord);
+			const auto AB = substraction(nodeBCoord, nodeACoord);
+			const auto AC = substraction(nodeCCoord, nodeACoord);
 			auto _normal = crossProduct(AB, AC);
 			normal[vertex] = normalization(_normal);
 			// Check if normal vector is pointing outwards (going away from O)
@@ -120,7 +120,7 @@ void computeGeometry() {
 			area[vertex] = magnitude(_normal) / 2;
 
 			if (vertex == 0)
-				jacobi = scalarProduct(OA, crossProduct(OB, OC));
+				jacobi = scalarProduct(crossProduct(OA, OB), OC);
 
 			auto jacobiAbs = abs(jacobi);
 			if (tetrahedra == 0 || (jacobiAbs / area[vertex] < timeStep))
@@ -133,8 +133,7 @@ void computeGeometry() {
 			tetrahedraGeometry.vertexWeight[tetrahedra][vertex] = tetrahedraGeometry.solidAngle[tetrahedra][vertex] / angleTotal[node];
 		}
 	}
-	timeStep *= 2 * input.cfl / 6;
-	auto maxArea = std::max_element(tetrahedraGeometry.triangleArea.begin(), tetrahedraGeometry.triangleArea.end());
+	timeStep *= input.cfl / 6;
 }
 }
 //}}}
@@ -142,11 +141,11 @@ void computeGeometry() {
 namespace Tetrahedra {//{{{
 void computeMeanGradient() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
-		const auto &nodeO = mesh.tetrahedra[tetrahedra][0] - 1;
-		const auto &nodeA = mesh.tetrahedra[tetrahedra][1] - 1;
-		const auto &nodeB = mesh.tetrahedra[tetrahedra][2] - 1;
-		const auto &nodeC = mesh.tetrahedra[tetrahedra][3] - 1;
-		const auto &uOABC = array<double, 4>{
+		const auto nodeO = mesh.tetrahedra[tetrahedra][0] - 1;
+		const auto nodeA = mesh.tetrahedra[tetrahedra][1] - 1;
+		const auto nodeB = mesh.tetrahedra[tetrahedra][2] - 1;
+		const auto nodeC = mesh.tetrahedra[tetrahedra][3] - 1;
+		const auto uOABC = array<double, 4>{
 			computationData.uVertex[nodeO],
 			computationData.uVertex[nodeA],
 			computationData.uVertex[nodeB],
@@ -156,14 +155,14 @@ void computeMeanGradient() {
 		const auto &vertexACoord = mesh.nodes[nodeA];
 		const auto &vertexBCoord = mesh.nodes[nodeB];
 		const auto &vertexCCoord = mesh.nodes[nodeC];
-
-		auto &gradient = computationData.gradient[tetrahedra];
 		auto coordinates = array<array<double, 3>, 4>{{
 			{vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
 			{vertexACoord[0], vertexACoord[1], vertexACoord[2]},
 			{vertexBCoord[0], vertexBCoord[1], vertexBCoord[2]},
 			{vertexCCoord[0], vertexCCoord[1], vertexCCoord[2]}
 		}};
+
+		auto &gradient = computationData.gradient[tetrahedra];
 		for (int index = 0; index < 3; ++index) {
 			auto sCoord = coordinates;
 			for (int vertex = 0; vertex < 4; ++vertex)
@@ -178,6 +177,7 @@ void computeMeanGradient() {
 void computeFluxes() {
 	computationData.hamiltonArg = vector<array<double, 3>>(mesh.nodes.size());
 	computationData.flux = vector<array<double, 2>>(mesh.nodes.size());
+
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
 		for (uint vertex = 0; vertex < 4; ++vertex) {
@@ -196,7 +196,10 @@ void computeFluxes() {
 			const auto node = _node - 1;
 			const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][vertexIndex];
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
-			computationData.flux[node][1] += area * scalarProduct(gradient, normal);
+			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertexIndex];
+			auto &flux = computationData.flux[node];
+			flux[1] += area * scalarProduct(gradient, normal) * weight;
+			vertexIndex++;
 		}
 	}
 }
@@ -206,17 +209,16 @@ void computeFluxes() {
 namespace Triangles {//{{{
 void ApplyBoundaryConditions(){
 	uint nodeIndex = 0;
-	for (auto &node: boundaryConditions) {
-		auto &type = boundaries[node].type;
-		auto &value = boundaries[node].value[0];
-		auto &valueSup = boundaries[node].value[1];
+	for (auto &tag: boundaryConditions) {
+		auto &type = boundaries[tag].type;
+		auto &value = boundaries[tag].value[0];
+		auto &valueSup = boundaries[tag].value[1];
 		auto &flux = computationData.flux[nodeIndex];
-		auto &hamiltonArg = computationData.hamiltonArg[nodeIndex];
+		auto hamiltonArg = computationData.hamiltonArg[nodeIndex];
 
 		switch (type) {
 			case 0: // no condition
 				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] /= angleTotal[nodeIndex];
 				break;
 			case 1: // inlet
 				flux[0] = 0;
@@ -224,7 +226,6 @@ void ApplyBoundaryConditions(){
 				break;
 			case 2: // outlet
 				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] /= angleTotal[nodeIndex];
 				break;
 			case 3: { // symmetry
 				auto symmetryVector = array<double, 3>{cos(valueSup) * cos(value), cos(valueSup) * sin(value), sin(valueSup)};
@@ -232,7 +233,6 @@ void ApplyBoundaryConditions(){
 					crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector),2
 				);
 				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] /= angleTotal[nodeIndex];
 				break;
 			}
 			default:
@@ -250,6 +250,7 @@ void computeResults() {
 		auto &uVertex = computationData.uVertex[node];
 		auto &flux = computationData.flux[node];
 		uVertex += timeStep * (flux[0] + input.diffusiveWeight * flux[1]);
+		timeTotal += timeStep;
 	}
 }
 }
