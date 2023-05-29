@@ -108,24 +108,31 @@ void computeGeometry() {
 			angleTotal[nodeO] += solidAngle[vertex];
 				// solidAngle[vertex] += 2 * M_PI;
 
-			// Calculating normal vector
-			const auto AB = substraction(nodeBCoord, nodeACoord);
-			const auto AC = substraction(nodeCCoord, nodeACoord);
-			auto _normal = crossProduct(AB, AC);
+			// Calculating area and normal vector of the intersection with a unit sphere
+			const auto uOA = normalization(OA);
+			const auto uOB = normalization(OB);
+			const auto uOC = normalization(OC);
+
+			const auto uAB = substraction(uOB, uOA);
+			const auto uAC = substraction(uOC, uOA);
+
+			auto _normal = crossProduct(uAB, uAC);
 			normal[vertex] = normalization(_normal);
 			// Check if normal vector is pointing outwards (going away from O)
 			if (scalarProduct(normal[vertex], OA) < 0)
 				normal[vertex] = multiplication(normal[vertex], -1);
-
 			area[vertex] = magnitude(_normal) / 2;
+
+			// Calculating jacobi determinant and time step
+			auto oppositeTriangleArea = magnitude((crossProduct(OA, OB))) / 2;
 
 			if (vertex == 0)
 				jacobi = abs(scalarProduct(crossProduct(OA, OB), OC));
 
 			if (tetrahedra == 0)
-				timeStep = jacobi / (area[vertex] * 2);
-			else if (timeStep > jacobi / (area[vertex] * 2))
-				timeStep = jacobi / (area[vertex] * 2);
+				timeStep = jacobi / (oppositeTriangleArea * 2);
+			else if (timeStep > jacobi / (oppositeTriangleArea * 2))
+				timeStep = jacobi / (oppositeTriangleArea * 2);
 		}
 	}
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
