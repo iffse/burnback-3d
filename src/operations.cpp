@@ -120,11 +120,12 @@ void computeGeometry() {
 			area[vertex] = magnitude(_normal) / 2;
 
 			if (vertex == 0)
-				jacobi = scalarProduct(crossProduct(OA, OB), OC);
+				jacobi = abs(scalarProduct(crossProduct(OA, OB), OC));
 
-			auto jacobiAbs = abs(jacobi);
-			if (tetrahedra == 0 || (jacobiAbs / area[vertex] < timeStep))
-				timeStep = jacobiAbs / area[vertex];
+			if (tetrahedra == 0)
+				timeStep = jacobi / (area[vertex] * 2);
+			else if (timeStep > jacobi / (area[vertex] * 2))
+				timeStep = jacobi / (area[vertex] * 2);
 		}
 	}
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {

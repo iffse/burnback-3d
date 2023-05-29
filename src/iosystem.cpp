@@ -69,7 +69,7 @@ void readMesh(std::string &filepath) {
 		}
 		boundaries.insert(pair<int, Boundary>(0, Boundary{0, {0, 0}, ""}));
 		boundaryConditions = vector<uint>(mesh.nodes.size());
-		auto triangleIndex = 0;
+		uint triangleIndex = 0;
 		for (auto &condition: conditions["triangle"]) {
 			auto &triangle = mesh.triangles[triangleIndex];
 			for (auto &_node: triangle) {
