@@ -12,6 +12,7 @@
 #include "src/headers/iosystem.h"
 #include <src/headers/globals.h>
 #include <src/headers/operations.h>
+#include <src/headers/plotData.h>
 
 #ifdef DEBUG
 #include <fenv.h>
@@ -220,18 +221,25 @@ void Actions::afterWorker() {
 		nodes[i] = mesh.nodes[i][2];
 	}
 
-	string filename = "results.json";
-	string origin = "";
-	bool pretty = true;
-	Json::writeData(filename, origin, pretty);
+	// string filename = "results.json";
+	// string origin = "";
+	// bool pretty = true;
+	// Json::writeData(filename, origin, pretty);
+
+	// auto data = isosurfaceData(0.5);
+
+	// for (uint i = 0; i < data.triangles.size(); ++i) {
+	// 	qDebug() << data.triangles[i][0] << data.triangles[i][1] << data.triangles[i][2];
+	// }
+
+	// for (uint i = 0; i < data.nodes.size(); ++i) {
+	// 	qDebug() << data.nodes[i][0] << data.nodes[i][1] << data.nodes[i][2];
+	// }
+
+	// for (uint i = 0; i < data.normals.size(); ++i) {
+	// 	qDebug() << data.normals[i][0] << data.normals[i][1] << data.normals[i][2];
+	// }
 
 
-	for (uint i = 0; i < mesh.nodes.size(); ++i) {
-		auto maxIndex = std::max_element(nodes.begin(), nodes.end()) - nodes.begin();
-		auto max = nodes[maxIndex];
-		auto maxValue = computationData.uVertex[maxIndex];
-		qDebug() << "Node" << maxIndex + 1 << "Height" << max << "Value" << maxValue << "Condition" << boundaryConditions[maxIndex] << "type" << boundaries[boundaryConditions[maxIndex]].type;
-		nodes[maxIndex] = -200;
-	}
 }
 

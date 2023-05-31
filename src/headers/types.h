@@ -56,3 +56,9 @@ struct ComputationData {
 		flux = std::vector<std::array<double, 2>>(nodes);
 	}
 };
+
+struct IsosurfaceData {
+	std::vector<std::array<double, 3>> nodes;
+	std::vector<std::array<uint, 3>> triangles;
+	std::vector<std::array<double, 3>> normals;
+};

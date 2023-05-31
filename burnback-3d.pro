@@ -33,12 +33,14 @@ HEADERS += \
 	./src/headers/globals.h \
 	./src/headers/iosystem.h \
 	./src/headers/operations.h \
-	./src/headers/interface.h
+	./src/headers/interface.h \
+	./src/headers/plotData.h
 SOURCES += \
 	./src/main.cpp \
 	./src/iosystem.cpp \
 	./src/operations.cpp \
-	./src/interface.cpp
+	./src/interface.cpp \
+	./src/plotData.cpp
 RESOURCES += src-qml/qml.qrc
 
 # Default rules for deployment.
