@@ -221,6 +221,10 @@ void Actions::afterWorker() {
 		nodes[i] = mesh.nodes[i][2];
 	}
 
+	WriteMesh::Material();
+	WriteMesh::IsocontourSurface(0.5);
+	WriteMesh::Boundary();
+
 	// string filename = "results.json";
 	// string origin = "";
 	// bool pretty = true;

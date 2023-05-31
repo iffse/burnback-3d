@@ -2,4 +2,4 @@
 
 #include <src/headers/types.h>
 
-IsosurfaceData isosurfaceData(double value);
+IsocontourData isosurfaceData(double value);

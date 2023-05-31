@@ -10,3 +10,8 @@ void writeData(std::string  &filepath, std::string  &origin, bool &pretty);
 void updateBoundaries(std::string  &filepath, bool &pretty);
 }
 
+namespace WriteMesh {
+void IsocontourSurface(double value);
+void Boundary();
+void Material();
+}

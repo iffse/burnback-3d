@@ -15,11 +15,22 @@ Item {
 			text: "Load"
 			onClicked: fileDialog.open()
 		}
+		Button {
+			id: button2
+			text: "Load2"
+			onClicked: fileDialog2.open()
+		}
 		FileDialog {
 			id: fileDialog
 			onAccepted: {
 				sceneLoader.source = fileDialog.fileUrl
 				mainScene3d.forceActiveFocus()
+			}
+		}
+		FileDialog {
+			id: fileDialog2
+			onAccepted: {
+				sceneLoader2.source = fileDialog2.fileUrl
 			}
 		}
 		Scene3D {
@@ -42,9 +53,9 @@ Item {
 					aspectRatio: 16/9
 					nearPlane : 0.1
 					farPlane : 100.0
-					position: Qt.vector3d( 50, 0, 50)
-					upVector: Qt.vector3d( 0, 1, 0)
-					viewCenter: Qt.vector3d( 0, 0, 0)
+					position: Qt.vector3d(10, 0, 10)
+					upVector: Qt.vector3d(0, 1, 0)
+					viewCenter: Qt.vector3d(0, 0, 0)
 					// rotate the camera so that the positive z-axis points upwards
 				}
 
@@ -64,7 +75,7 @@ Item {
 						id: directionalLight
 						// light blue
 						color: "#FFFFFF"
-						intensity: 0.5
+						intensity: 0.1
 						// the direction of the light is the same as the camera
 						worldDirection: camera.viewVector
 					}
@@ -75,6 +86,9 @@ Item {
 					components: [
 						SceneLoader {
 							id: sceneLoader
+						},
+						SceneLoader {
+							id: sceneLoader2
 						}
 					]
 				}

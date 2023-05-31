@@ -57,8 +57,8 @@ struct ComputationData {
 	}
 };
 
-struct IsosurfaceData {
+struct IsocontourData {
 	std::vector<std::array<double, 3>> nodes;
 	std::vector<std::array<uint, 3>> triangles;
-	std::vector<std::array<double, 3>> normals;
+	// std::vector<std::array<double, 3>> normals;
 };

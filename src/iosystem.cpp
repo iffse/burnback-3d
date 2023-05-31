@@ -4,6 +4,7 @@
 
 #include <src/headers/iosystem.h>
 #include <src/headers/globals.h>
+#include <src/headers/plotData.h>
 // #include <src/headers/operations.h>
 // #include <src/headers/interface.h>
 
@@ -114,3 +115,89 @@ void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
 void updateBoundaries(std::string  &filepath, bool &pretty);
 }//}}}
 
+namespace WriteMesh {
+// writes a mesh
+void IsocontourSurface(double value) {
+	auto filename = "mesh.obj";
+	auto data = isosurfaceData(value);
+	ofstream file(filename);
+	file << "# isocontour surface" << endl;
+	file << "mtllib mesh.mtl" << endl;
+	file << "usemtl grey" << endl;
+	// write vertices
+	for (auto &node: data.nodes)
+		file << "v " << node[0] << " " << node[1] << " " << node[2] << endl;
+	// write faces
+	for (auto &triangle: data.triangles)
+		file << "f " << triangle[0] + 1 << " " << triangle[1] + 1 << " " << triangle[2] + 1 << endl;
+	// // write normals
+	// for (auto &normal: data.normals)
+	// 	file << "vn " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
+
+
+};
+
+// this function writes a mtl texture file to display the mesh in 3D
+// contains 3 materials
+// 1. grey and opaque
+// 2. grey and transparent
+// 3. red and opaque
+// for some reasons QT3D doesn't render transparency.
+void Material() {
+	auto filename = "mesh.mtl";
+	// return if file already exists
+	ifstream fileExist(filename);
+	if (fileExist.good())
+		return;
+
+	ofstream file(filename);
+	file << "# grey and transparent" << endl;
+	file << "newmtl transparent" << endl;
+	file << "Ka 1 1 1" << endl;
+	file << "Kd 0.8 0.8 0.8" << endl;
+	file << "Ks 0.5 0.5 0.5" << endl;
+	file << "Ke 0 0 0" << endl;
+	file << "Ni 1.45" << endl;
+	file << "d 0.5" << endl;
+	file << "illum 9" << endl;
+	file << endl;
+
+	file << "# grey and opaque" << endl;
+	file << "newmtl opaque" << endl;
+	file << "Ka 1 1 1" << endl;
+	file << "Kd 0.5 0.5 0.5" << endl;
+	file << "Ks 0.5 0.5 0.5" << endl;
+	file << "Ke 0 0 0" << endl;
+	file << "Ni 1.45" << endl;
+	file << "d 1" << endl;
+	file << "illum 2" << endl;
+	file << endl;
+
+	file << "# red and opaque" << endl;
+	file << "newmtl red" << endl;
+	file << "Ka 1 1 1" << endl;
+	file << "Kd 1 0 0" << endl;
+	file << "Ks 0.5 0.5 0.5" << endl;
+	file << "Ke 0 0 0" << endl;
+	file << "Ni 1.45" << endl;
+	file << "d 1" << endl;
+	file << "illum 2" << endl;
+	file << endl;
+};
+
+void Boundary() {
+	ofstream file("boundary.obj");
+	file << "# boundary" << endl;
+	file << "mtllib mesh.mtl" << endl;
+	file << "usemtl transparent" << endl;
+	// write vertices
+	for (uint i = 0; i < mesh.nodes.size(); i++) {
+		file << "v " << mesh.nodes[i][0] << " " << mesh.nodes[i][1] << " " << mesh.nodes[i][2] << endl;
+	}
+	// write faces
+	for (auto & triangle: mesh.triangles)
+		file << "f " << triangle[0] << " " << triangle[1] << " " << triangle[2] << endl;
+
+}
+
+}
