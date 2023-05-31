@@ -39,19 +39,49 @@ IsocontourData isosurfaceData(double value) {
 					auto &node1 = mesh.nodes[nodes[i]];
 					auto &node2 = mesh.nodes[nodes[j]];
 
-					auto x1 = node1[0];
-					auto y1 = node1[1];
-					auto z1 = node1[2];
+					auto &x1 = node1[0];
+					auto &y1 = node1[1];
+					auto &z1 = node1[2];
 
-					auto x2 = node2[0];
-					auto y2 = node2[1];
-					auto z2 = node2[2];
+					auto &x2 = node2[0];
+					auto &y2 = node2[1];
+					auto &z2 = node2[2];
 
-					auto t = (value - uVertex1) / (uVertex2 - uVertex1);
+					double uV1, uV2, ux1, ux2, uy1, uy2, uz1, uz2;
 
-					auto x = lerp(x1, x2, t);
-					auto y = lerp(y1, y2, t);
-					auto z = lerp(z1, z2, t);
+					// sort the vertices
+					// so when reversing the order, the result is the same
+					if (value1 < 0) {
+						uV1 = uVertex1;
+						uV2 = uVertex2;
+
+						ux1 = x1;
+						ux2 = x2;
+
+						uy1 = y1;
+						uy2 = y2;
+
+						uz1 = z1;
+						uz2 = z2;
+					} else {
+						uV1 = uVertex2;
+						uV2 = uVertex1;
+
+						ux1 = x2;
+						ux2 = x1;
+
+						uy1 = y2;
+						uy2 = y1;
+
+						uz1 = z2;
+						uz2 = z1;
+					}
+
+					auto t = (value - uV1) / (uV2 - uV1);
+
+					auto x = lerp(ux1, ux2, t);
+					auto y = lerp(uy1, uy2, t);
+					auto z = lerp(uz1, uz2, t);
 
 					intersectionPoints.push_back({ x, y, z });
 				}
@@ -82,8 +112,22 @@ IsocontourData isosurfaceData(double value) {
 				break;
 			}
 			case 4: {
-				array<uint, 4> triangleVertices1 = {0, 1, 2};
-				array<uint, 4> triangleVertices2 = {0, 2, 3};
+				// order intersection points
+				array<uint, 4> orderedPoints;
+				array<double, 4> distances;
+				for (int i = 0; i < 4; ++i)
+					distances[i] = magnitude(intersectionPoints[i]);
+				for (int i = 0; i < 4; ++i) {
+					// get index of the minimum distance
+					auto minIndex = min_element(distances.begin(), distances.end()) - distances.begin();
+					orderedPoints[i] = minIndex;
+					distances[minIndex] = INFINITY;
+				}
+				// swap the last two points
+				swap(orderedPoints[2], orderedPoints[3]);
+
+				array<uint, 4> triangleVertices1 = {orderedPoints[0], orderedPoints[1], orderedPoints[2]};
+				array<uint, 4> triangleVertices2 = {orderedPoints[0], orderedPoints[2], orderedPoints[3]};
 
 				array<uint, 3> triangleNodes1 = {};
 				array<uint, 3> triangleNodes2 = {};
