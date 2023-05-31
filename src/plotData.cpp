@@ -114,17 +114,32 @@ IsocontourData isosurfaceData(double value) {
 			case 4: {
 				// order intersection points
 				array<uint, 4> orderedPoints;
-				array<double, 4> distances;
-				for (int i = 0; i < 4; ++i)
-					distances[i] = magnitude(intersectionPoints[i]);
-				for (int i = 0; i < 4; ++i) {
-					// get index of the minimum distance
-					auto minIndex = min_element(distances.begin(), distances.end()) - distances.begin();
-					orderedPoints[i] = minIndex;
-					distances[minIndex] = INFINITY;
+				//center point
+				auto center = multiplication((summation(
+					summation(intersectionPoints[0], intersectionPoints[1]),
+					summation(intersectionPoints[2], intersectionPoints[3]))
+				) , 0.25);
+				// sort by angle
+				auto OA = subtraction(intersectionPoints[0], center);
+				auto normal = crossProduct(OA, subtraction(intersectionPoints[1], center));
+				auto mOA = magnitude(OA);
+				array<double, 3> angles;
+				for (int i = 1; i < 4; ++i) {
+					auto OB = subtraction(intersectionPoints[i], center);
+					auto mOB = magnitude(OB);
+					auto ab = scalarProduct(OA, OB);
+					auto xab = crossProduct(OA, OB);
+					auto _angle = acos(ab / (mOA * mOB));
+					if (scalarProduct(normal, xab) < 0)
+						_angle = 2 * M_PI - _angle;
+					angles[i - 1] = _angle;
 				}
-				// swap the last two points
-				swap(orderedPoints[2], orderedPoints[3]);
+				orderedPoints[0] = 0;
+				for (int i = 1; i < 4; ++i) {
+					auto minAngleIndex = min_element(angles.begin(), angles.end()) - angles.begin();
+					orderedPoints[i] = minAngleIndex + 1;
+					angles[minAngleIndex] = INFINITY;
+				}
 
 				array<uint, 4> triangleVertices1 = {orderedPoints[0], orderedPoints[1], orderedPoints[2]};
 				array<uint, 4> triangleVertices2 = {orderedPoints[0], orderedPoints[2], orderedPoints[3]};

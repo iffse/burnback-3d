@@ -30,9 +30,9 @@ void computeGeometry() {
 			const auto &nodeBCoord = mesh.nodes[nodeB];
 			const auto &nodeCCoord = mesh.nodes[nodeC];
 
-			const auto OA = substraction(nodeACoord, nodeOCoord);
-			const auto OB = substraction(nodeBCoord, nodeOCoord);
-			const auto OC = substraction(nodeCCoord, nodeOCoord);
+			const auto OA = subtraction(nodeACoord, nodeOCoord);
+			const auto OB = subtraction(nodeBCoord, nodeOCoord);
+			const auto OC = subtraction(nodeCCoord, nodeOCoord);
 
 			// Calculating solid angle: Oosterom and Strackee algorithm
 			const auto tripleProduct = scalarProduct(OA, crossProduct(OB, OC));
@@ -57,8 +57,8 @@ void computeGeometry() {
 			const auto uOB = normalization(OB);
 			const auto uOC = normalization(OC);
 
-			const auto uAB = substraction(uOB, uOA);
-			const auto uAC = substraction(uOC, uOA);
+			const auto uAB = subtraction(uOB, uOA);
+			const auto uAC = subtraction(uOC, uOA);
 
 			auto _normal = crossProduct(uAB, uAC);
 			normal[vertex] = normalization(_normal);
@@ -119,9 +119,9 @@ void computeMeanGradient() {
 			auto sCoord = coordinates;
 			for (int vertex = 0; vertex < 4; ++vertex)
 				sCoord[vertex][index] = uOABC[vertex];
-			auto r12 = substraction(sCoord[1], sCoord[0]);
-			auto r13 = substraction(sCoord[2], sCoord[0]);
-			auto r14 = substraction(sCoord[3], sCoord[0]);
+			auto r12 = subtraction(sCoord[1], sCoord[0]);
+			auto r13 = subtraction(sCoord[2], sCoord[0]);
+			auto r14 = subtraction(sCoord[3], sCoord[0]);
 			gradient[index] = scalarProduct(crossProduct(r12, r13), r14) / tetrahedraGeometry.jacobiDeterminant[tetrahedra];
 		}
 	}

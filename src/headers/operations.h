@@ -39,7 +39,7 @@ T summation(const T &a, const T &b) {
 	return result;
 };
 template <typename T>
-T substraction(const T &a, const T &b) {
+T subtraction(const T &a, const T &b) {
 	T result;
 	for (uint i = 0; i < a.size(); ++i)
 		result[i] = a[i] - b[i];
