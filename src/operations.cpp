@@ -9,65 +9,9 @@
 
 
 using namespace std;
-
-namespace Vectors {//{{{
-template <typename T>
-auto crossProduct(const T &a, const T &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
-	return result;
-};
-template <typename T>
-auto scalarProduct(const T &a, const T &b) {
-	auto result = 0.0;
-	for (uint i = 0; i < a.size(); ++i)
-		result += a[i] * b[i];
-	return result;
-};
-template <typename T>
-auto magnitude(const T &a) {
-	double result = 0.0;
-	for (uint i = 0; i < a.size(); ++i)
-		result += a[i] * a[i];
-	return sqrt(result);
-};
-template <typename T>
-auto normalization(const T &a) {
-	T result;
-	auto mag = magnitude(a);
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] / mag;
-	return result;
-};
-template <typename T>
-auto summation(const T &a, const T &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] + b[i];
-	return result;
-};
-template <typename T>
-auto substraction(const T &a, const T &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] - b[i];
-
-	return result;
-};
-template <typename T>
-auto multiplication(const T &a, const double &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] * b;
-	return result;
-};
-}
 using namespace Vectors;
-//}}}
 
 namespace Geometry {//{{{
-
 void computeGeometry() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		auto &solidAngle = tetrahedraGeometry.solidAngle[tetrahedra];

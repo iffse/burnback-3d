@@ -222,7 +222,7 @@ void Actions::afterWorker() {
 	}
 
 	WriteMesh::Material();
-	WriteMesh::IsocontourSurface(0.5);
+	WriteMesh::IsocontourSurface(0.01);
 	WriteMesh::Boundary();
 
 	// string filename = "results.json";

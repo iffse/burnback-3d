@@ -1,63 +1,10 @@
 #include <cmath>
 #include <src/headers/plotData.h>
 #include <src/headers/globals.h>
+#include <src/headers/operations.h>
 
 using namespace std;
-namespace Vectors {//{{{
-template <typename T>
-auto crossProduct(const T &a, const T &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
-	return result;
-};
-template <typename T>
-auto scalarProduct(const T &a, const T &b) {
-	auto result = 0.0;
-	for (uint i = 0; i < a.size(); ++i)
-		result += a[i] * b[i];
-	return result;
-};
-template <typename T>
-auto magnitude(const T &a) {
-	double result = 0.0;
-	for (uint i = 0; i < a.size(); ++i)
-		result += a[i] * a[i];
-	return sqrt(result);
-};
-template <typename T>
-auto normalization(const T &a) {
-	T result;
-	auto mag = magnitude(a);
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] / mag;
-	return result;
-};
-template <typename T>
-auto summation(const T &a, const T &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] + b[i];
-	return result;
-};
-template <typename T>
-auto substraction(const T &a, const T &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] - b[i];
-
-	return result;
-};
-template <typename T>
-auto multiplication(const T &a, const double &b) {
-	T result;
-	for (uint i = 0; i < a.size(); ++i)
-		result[i] = a[i] * b;
-	return result;
-};
-}
 using namespace Vectors;
-//}}}
 
 // lerp is available since c++20
 // as time of writing, cpp20 has only partial support by the compilers
@@ -72,8 +19,10 @@ double lerp(double x1, double x2, double t) {
 IsocontourData isosurfaceData(double value) {
 	IsocontourData data;
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
-		auto &vertices = mesh.tetrahedra[tetrahedra];
-		array<uint, 4> nodes = { vertices[0] - 1, vertices[1] - 1, vertices[2] - 1, vertices[3] - 1 };
+		auto &_nodes = mesh.tetrahedra[tetrahedra];
+		array<uint, 4> nodes;
+		for (uint i = 0; i < 4; ++i)
+			nodes[i] = _nodes[i] - 1;
 
 		vector<array<double, 3>> intersectionPoints;
 
@@ -104,11 +53,7 @@ IsocontourData isosurfaceData(double value) {
 					auto y = lerp(y1, y2, t);
 					auto z = lerp(z1, z2, t);
 
-					if (abs(z - 0.5) > 0.1) {
-						qDebug() << "z is not 0.5" << z;
-					}
 					intersectionPoints.push_back({ x, y, z });
-
 				}
 			}
 		}
@@ -134,31 +79,6 @@ IsocontourData isosurfaceData(double value) {
 					triangleNodes[i] = nodeIndex;
 				}
 				data.triangles.push_back(triangleNodes);
-				// // normals from distance of vertices
-				// auto OA = substraction(data.nodes[triangleNodes[1]], data.nodes[triangleNodes[0]]);
-				// auto OB = substraction(data.nodes[triangleNodes[2]], data.nodes[triangleNodes[0]]);
-				// auto normal = normalization(crossProduct(OA, OB));
-				// // check if the normal is pointing in the right direction
-				// uint valueMinVertex = 0, valueMaxVertex = 0;
-				// for (int i = 1; i < 4; ++i) {
-				// 	auto &uVertex = computationData.uVertex[nodes[i]];
-				// 	auto &currentMin = computationData.uVertex[nodes[valueMinVertex]];
-				// 	auto &currentMax = computationData.uVertex[nodes[valueMaxVertex]];
-				// 	auto compareValues = [&](double value) {
-				// 		return uVertex - value;
-				// 	};
-				// 	if (compareValues(currentMin) < 0) {
-				// 		valueMinVertex = i;
-				// 	} else if (compareValues(currentMax) > 0) {
-				// 		valueMaxVertex = i;
-				// 	}
-				// }
-				// auto flowDirection = substraction(mesh.nodes[nodes[valueMaxVertex]], mesh.nodes[nodes[valueMinVertex]]);
-				// if (scalarProduct(normal, flowDirection) < 0) {
-				// 	normal = multiplication(normal, -1);
-				// }
-				// data.normals.push_back(normal);
-
 				break;
 			}
 			case 4: {
@@ -199,44 +119,8 @@ IsocontourData isosurfaceData(double value) {
 				}
 				data.triangles.push_back(triangleNodes1);
 				data.triangles.push_back(triangleNodes2);
-
-				// // normals from distance of vertices
-				// // triangle 1
-				// auto OA = substraction(data.nodes[triangleNodes1[1]], data.nodes[triangleNodes1[0]]);
-				// auto OB = substraction(data.nodes[triangleNodes1[2]], data.nodes[triangleNodes1[0]]);
-				// auto normal = normalization(crossProduct(OA, OB));
-				// // check if the normal is pointing in the right direction
-				// uint valueMinVertex = 0, valueMaxVertex = 0;
-				// for (int i = 1; i < 4; ++i) {
-				// 	auto &uVertex = computationData.uVertex[nodes[i]];
-				// 	auto &currentMin = computationData.uVertex[nodes[valueMinVertex]];
-				// 	auto &currentMax = computationData.uVertex[nodes[valueMaxVertex]];
-				// 	auto compareValues = [&](double value) {
-				// 		return uVertex - value;
-				// 	};
-				// 	if (compareValues(currentMin) < 0) {
-				// 		valueMinVertex = i;
-				// 	} else if (compareValues(currentMax) > 0) {
-				// 		valueMaxVertex = i;
-				// 	}
-				// }
-				// auto flowDirection = substraction(mesh.nodes[nodes[valueMaxVertex]], mesh.nodes[nodes[valueMinVertex]]);
-				// if (scalarProduct(normal, flowDirection) < 0) {
-				// 	normal = multiplication(normal, -1);
-				// }
-				// data.normals.push_back(normal);
-
-				// // triangle 2
-				// OA = substraction(data.nodes[triangleNodes2[1]], data.nodes[triangleNodes2[0]]);
-				// OB = substraction(data.nodes[triangleNodes2[2]], data.nodes[triangleNodes2[0]]);
-				// normal = normalization(crossProduct(OA, OB));
-				// // check if the normal is pointing in the right direction
-				// if (scalarProduct(normal, flowDirection) < 0) {
-				// 	normal = multiplication(normal, -1);
-				// }
-				// data.normals.push_back(normal);
 				break;
-				}
+			}
 			default:
 				throw runtime_error("Unexpected number of intersection points");
 

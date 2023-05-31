@@ -125,16 +125,19 @@ void IsocontourSurface(double value) {
 	file << "mtllib mesh.mtl" << endl;
 	file << "usemtl grey" << endl;
 	// write vertices
-	for (auto &node: data.nodes)
-		file << "v " << node[0] << " " << node[1] << " " << node[2] << endl;
+	for (auto &node: data.nodes) {
+		file << "v";
+		for (auto &coord: node)
+			file << " " << coord;
+		file << endl;
+	}
 	// write faces
-	for (auto &triangle: data.triangles)
-		file << "f " << triangle[0] + 1 << " " << triangle[1] + 1 << " " << triangle[2] + 1 << endl;
-	// // write normals
-	// for (auto &normal: data.normals)
-	// 	file << "vn " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
-
-
+	for (auto &triangle: data.triangles) {
+		file << "f";
+		for (auto &node: triangle)
+			file << " " << node + 1;
+		file << endl;
+	}
 };
 
 // this function writes a mtl texture file to display the mesh in 3D
