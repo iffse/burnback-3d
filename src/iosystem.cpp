@@ -123,7 +123,7 @@ void IsocontourSurface(double value) {
 	ofstream file(filename);
 	file << "# isocontour surface" << endl;
 	file << "mtllib mesh.mtl" << endl;
-	file << "usemtl grey" << endl;
+	file << "usemtl opaque" << endl;
 	// write vertices
 	for (auto &node: data.nodes) {
 		file << "v";
@@ -156,6 +156,7 @@ void Material() {
 	ofstream file(filename);
 	file << "# grey and transparent" << endl;
 	file << "newmtl transparent" << endl;
+	file << "Ns 250" << endl;
 	file << "Ka 1 1 1" << endl;
 	file << "Kd 0.8 0.8 0.8" << endl;
 	file << "Ks 0.5 0.5 0.5" << endl;
@@ -167,6 +168,7 @@ void Material() {
 
 	file << "# grey and opaque" << endl;
 	file << "newmtl opaque" << endl;
+	file << "Ns 250" << endl;
 	file << "Ka 1 1 1" << endl;
 	file << "Kd 0.5 0.5 0.5" << endl;
 	file << "Ks 0.5 0.5 0.5" << endl;
@@ -178,6 +180,7 @@ void Material() {
 
 	file << "# red and opaque" << endl;
 	file << "newmtl red" << endl;
+	file << "Ns 250" << endl;
 	file << "Ka 1 1 1" << endl;
 	file << "Kd 1 0 0" << endl;
 	file << "Ks 0.5 0.5 0.5" << endl;
