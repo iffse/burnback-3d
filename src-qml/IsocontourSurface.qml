@@ -7,6 +7,7 @@ import Qt3D.Core 2.0
 import Qt3D.Render 2.0
 import Qt3D.Input 2.0
 import Qt3D.Extras 2.0
+import QtQuick.Controls.Material 2.15
 
 Item {
 	Column {
@@ -33,10 +34,11 @@ Item {
 				sceneLoader2.source = fileDialog2.fileUrl
 			}
 		}
+
 		Scene3D {
 			id: mainScene3d
-			width: 640
-			height: 480
+			height: 400
+			width: 400
 			focus: true
 			hoverEnabled: true
 
@@ -66,16 +68,15 @@ Item {
 				components: [
 					RenderSettings {
 						activeFrameGraph: ForwardRenderer {
-							clearColor:"#999999"
+							clearColor: "#808080"
 							camera: camera
 						}
 					},
 					InputSettings {},
 					DirectionalLight {
 						id: directionalLight
-						// light blue
 						color: "#FFFFFF"
-						intensity: 0.1
+						intensity: 0.5
 						// the direction of the light is the same as the camera
 						worldDirection: camera.viewVector
 					}

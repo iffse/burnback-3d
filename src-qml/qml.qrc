@@ -6,8 +6,8 @@
 		<file>Tabs.qml</file>
 		<file>InputConf.qml</file>
 		<file>OutputConf.qml</file>
-		<file>ResultTab.qml</file>
 		<file>PlotArea.qml</file>
+		<file>LabeledSlider.qml</file>
 		<file>IsocontourSurface.qml</file>
 		<file>Graphs.qml</file>
 		<file>Output.qml</file>
