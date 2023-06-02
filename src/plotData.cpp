@@ -130,8 +130,8 @@ IsocontourData isosurfaceData(double value) {
 					auto ab = scalarProduct(OA, OB);
 					auto xab = crossProduct(OA, OB);
 					auto angleArg = ab / (mOA * mOB);
-					if (angleArg > 1)
-						angleArg = 1;
+					if (abs(angleArg) > 1)
+						angleArg =  angleArg / abs(angleArg);
 					auto _angle = acos(angleArg);
 					if (scalarProduct(normal, xab) < 0)
 						_angle = 2 * M_PI - _angle;
