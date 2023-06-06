@@ -108,6 +108,14 @@ IsocontourData isosurfaceData(double value) {
 					}
 					triangleNodes[i] = nodeIndex;
 				}
+				auto normal = crossProduct(
+					subtraction(data.nodes[triangleNodes[1]], data.nodes[triangleNodes[0]]),
+					subtraction(data.nodes[triangleNodes[2]], data.nodes[triangleNodes[0]])
+				);
+				auto flowDirection = computationData.gradient[tetrahedra];
+				if (scalarProduct(normal, flowDirection) > 0) {
+					swap(triangleNodes[1], triangleNodes[2]);
+				}
 				data.triangles.push_back(triangleNodes);
 				break;
 			}
@@ -179,6 +187,23 @@ IsocontourData isosurfaceData(double value) {
 					}
 					triangleNodes2[i] = nodeIndex;
 				}
+				auto flowDirection = computationData.gradient[tetrahedra];
+				auto normal1 = crossProduct(
+					subtraction(data.nodes[triangleNodes1[1]], data.nodes[triangleNodes1[0]]),
+					subtraction(data.nodes[triangleNodes1[2]], data.nodes[triangleNodes1[0]])
+				);
+				if (scalarProduct(normal1, flowDirection) > 0) {
+					swap(triangleNodes1[1], triangleNodes1[2]);
+				}
+
+				auto normal2 = crossProduct(
+					subtraction(data.nodes[triangleNodes2[1]], data.nodes[triangleNodes2[0]]),
+					subtraction(data.nodes[triangleNodes2[2]], data.nodes[triangleNodes2[0]])
+				);
+				if (scalarProduct(normal2, flowDirection) > 0) {
+					swap(triangleNodes2[1], triangleNodes2[2]);
+				}
+
 				data.triangles.push_back(triangleNodes1);
 				data.triangles.push_back(triangleNodes2);
 				break;
