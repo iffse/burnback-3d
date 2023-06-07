@@ -306,3 +306,6 @@ void Actions::clearCache() {
 	dir.removeRecursively();
 }
 
+void Actions::setCullingMethod(uint method) {
+	emit setCulling(method);
+}

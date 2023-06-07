@@ -52,28 +52,20 @@ ScrollView {
 		}
 
 		GroupBox {
-			title: qsTr("Isocontour lines")
+			title: qsTr("Isocontour surface")
 			width: parent.width
 
-			Column {
+			ComboBox {
+				objectName: "cullingMethod"
 				width: parent.width
-
-				LabelInput {
-					text: "Size to draw (px)"
-					placeholderText: "Enter a number"
-					toolTipText: "Maximum size of the weight or height to draw the isocontour lines, in pixels."
-					objName: "isocontourSize"
-					defaultInput: "1000"
-					decimals: false
-				}
-
-				LabelInput {
-					text: "Number of lines"
-					placeholderText: "Enter a number"
-					toolTipText: "Number of isocontour lines to draw. 0 to disable."
-					objName: "numIsocontourLines"
-					defaultInput: "10"
-					decimals: false
+				currentIndex: 0
+				model: [
+					"No culling",
+					"Backface culling",
+					"Frontface culling"
+				]
+				onCurrentIndexChanged: {
+					actions.setCullingMethod(currentIndex)
 				}
 			}
 		}

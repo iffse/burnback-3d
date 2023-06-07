@@ -11,6 +11,19 @@ import Qt3D.Extras 2.0
 Item {
 	Connections {
 		target: actions
+		function onSetCulling(method) {
+			switch (method) {
+				case 0:
+					cullFace.mode = CullFace.NoCulling
+					break
+				case 1:
+					cullFace.mode = CullFace.Back
+					break
+				case 2:
+					cullFace.mode = CullFace.Front
+					break
+			}
+		}
 		function onSetCameraPosition(x, y, z) {
 			camera.position = Qt.vector3d(x, z, y)
 			camera.viewCenter = Qt.vector3d(0, 0, 0)
@@ -37,7 +50,7 @@ Item {
 				fieldOfView: 45
 				aspectRatio: 16/9
 				nearPlane : 0.1
-				farPlane : 100.0
+				farPlane : 5000.0
 				position: Qt.vector3d(10, 0, 10)
 				upVector: Qt.vector3d(0, 1, 0)
 				viewCenter: Qt.vector3d(0, 0, 0)
@@ -59,7 +72,10 @@ Item {
 								camera: camera
 								RenderStateSet {
 									renderStates: [
-										CullFace { mode: CullFace.NoCulling } 
+										CullFace {
+											id: cullFace
+											mode: CullFace.NoCulling
+										}
 									]
 								}
 							}

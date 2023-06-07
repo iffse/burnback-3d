@@ -6,3 +6,7 @@ release
 debug
 docs/doxygen
 *.user
+*.json
+*.msh
+*.obj
+*.mtl

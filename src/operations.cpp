@@ -178,6 +178,7 @@ void ApplyBoundaryConditions(){
 				break;
 			case 2: // outlet
 				flux[0] = 1 - magnitude(hamiltonArg);
+				flux[1] = 0;
 				break;
 			case 3: { // symmetry
 				auto symmetryVector = array<double, 3>{cos(valueSup) * cos(value), cos(valueSup) * sin(value), sin(valueSup)};
