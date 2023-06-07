@@ -11,7 +11,7 @@ void updateBoundaries(std::string  &filepath, bool &pretty);
 }
 
 namespace WriteMesh {
-void IsocontourSurface(double value);
+void IsocontourSurface(double value, std::string filepath);
 void Boundary();
 void Material();
 }

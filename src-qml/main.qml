@@ -11,6 +11,10 @@ ApplicationWindow {
 	visible: true
 	title: qsTr("Burnback 3D")
 
+	onClosing: {
+		actions.clearCache()
+	}
+
 	menuBar: AplicationMenu {}
 
 	contentData: RowLayout {

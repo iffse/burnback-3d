@@ -6,12 +6,13 @@ Item {
 	RowLayout {
 		anchors.fill: parent
 		Slider {
+			objectName: "isosurfaceSlider"
 			id: slider
 			Layout.fillWidth: true
 			from: 0
 			value: 0
 			to: 1
-			onPressedChanged: if (!pressed) console.log(value)
+			onPressedChanged: if (!pressed) actions.updateIsosurface(value)
 			onValueChanged: label.text = value.toFixed(4)
 		}
 		Text {

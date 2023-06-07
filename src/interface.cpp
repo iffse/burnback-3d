@@ -7,6 +7,8 @@
 #include <thread>
 #include <QFile>
 #include <vector>
+#include <QDir>
+#include <QStandardPaths>
 
 #include <src/headers/interface.h>
 #include "src/headers/iosystem.h"
@@ -216,14 +218,46 @@ void Actions::worker() {
 void Actions::afterWorker() {
 	root->findChild<QObject*>("runButton")->setProperty("text", "Run");
 
+	tmpDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+	if (tmpDir == "") {
+		tmpDir = QDir::currentPath();
+	}
+	if (!tmpDir.endsWith("/")) {
+		tmpDir += "/";
+	}
+	tmpDir += "burnback-3d/";
+	// make sure the directory exists
+	QDir dir(tmpDir);
+	if (!dir.exists())
+		dir.mkpath(tmpDir);
+
+
 	auto nodes = vector<double>(mesh.nodes.size());
 	for (uint i = 0; i < mesh.nodes.size(); ++i) {
 		nodes[i] = mesh.nodes[i][2];
 	}
 
 	WriteMesh::Material();
-	WriteMesh::IsocontourSurface(0.01);
 	WriteMesh::Boundary();
+	double minx = 0, miny = 0, minz = 0, maxx = 0, maxy = 0, maxz = 0;
+	for (auto &node: mesh.nodes) {
+		minx = min(minx, node[0]);
+		miny = min(miny, node[1]);
+		minz = min(minz, node[2]);
+		maxx = max(maxx, node[0]);
+		maxy = max(maxy, node[1]);
+		maxz = max(maxz, node[2]);
+
+	}
+
+	auto x = (maxx - minx) * 1.5 + maxx;
+	auto y = (maxy - miny) * 1.5 + maxy;
+	auto z = (maxz - minz) * 1.5 + maxz;
+
+	emit setCameraPosition(x, y, z);
+
+	double isosurfaceValue = root->findChild<QObject*>("isosurfaceSlider")->property("value").toDouble();
+	previewIsosurface(isosurfaceValue);
 
 	// string filename = "results.json";
 	// string origin = "";
@@ -245,5 +279,30 @@ void Actions::afterWorker() {
 	// }
 
 
+}
+
+void Actions::previewIsosurface(double value) {
+
+#ifdef _WIN32
+	const QString substring = "file:///";
+#else
+	const QString substring = "file://";
+#endif
+
+	auto filepath = tmpDir + "surface" + QString::number(drawCount) + ".obj";
+	auto url = substring + filepath;
+	WriteMesh::IsocontourSurface(value, filepath.toStdString());
+	emit loadMeshPreview(url);
+	drawCount++;
+}
+
+void Actions::updateIsosurface(double value) {
+	if (computationData.uVertex.size() > 0)
+		previewIsosurface(value);
+}
+
+void Actions::clearCache() {
+	QDir dir(tmpDir);
+	dir.removeRecursively();
 }
 

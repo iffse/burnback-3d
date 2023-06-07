@@ -16,6 +16,8 @@ signals:
 	void updateProgress(uint progress, uint total);
 	void finished();
 	void readFinished(bool success);
+	void setCameraPosition(double x, double y, double z);
+	void loadMeshPreview(QString);
 
 public slots:
 	void readMesh(QString path);
@@ -26,6 +28,9 @@ public slots:
 	void appendOutput(QString text);
 	void worker();
 	void afterWorker();
+	void previewIsosurface(double value);
+	void updateIsosurface(double value);
+	void clearCache();
 	// void exportData(QString filepath, bool pretty);
 	// std::vector<QString> getBoundaries();
 	// void updateBoundaries(bool saveToFile, bool pretty);

@@ -117,10 +117,9 @@ void updateBoundaries(std::string  &filepath, bool &pretty);
 
 namespace WriteMesh {
 // writes a mesh
-void IsocontourSurface(double value) {
-	auto filename = "mesh.obj";
+void IsocontourSurface(double value, std::string filepath) {
 	auto data = isosurfaceData(value);
-	ofstream file(filename);
+	ofstream file(filepath);
 	file << "# isocontour surface" << endl;
 	file << "mtllib mesh.mtl" << endl;
 	file << "usemtl opaque" << endl;

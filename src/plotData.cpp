@@ -210,7 +210,6 @@ IsocontourData isosurfaceData(double value) {
 			}
 			default:
 				throw runtime_error("Unexpected number of intersection points");
-
 		}
 	}
 	return data;
