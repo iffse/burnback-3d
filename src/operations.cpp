@@ -161,31 +161,33 @@ void computeFluxes() {
 namespace Triangles {//{{{
 void ApplyBoundaryConditions(){
 	uint nodeIndex = 0;
-	for (auto &tag: boundaryConditions) {
-		auto &type = boundaries[tag].type;
-		auto &value = boundaries[tag].value[0];
-		auto &valueSup = boundaries[tag].value[1];
+	for (auto &type: boundaryConditions) {
 		auto &flux = computationData.flux[nodeIndex];
 		auto hamiltonArg = computationData.hamiltonArg[nodeIndex];
 
 		switch (type) {
-			case 0: // no condition
+			case NO_CONDITION:
 				flux[0] = 1 - magnitude(hamiltonArg);
 				break;
-			case 1: // inlet
+			case INLET:
 				flux[0] = 0;
 				flux[1] = 0;
 				break;
-			case 2: // outlet
+			case OUTLET:
 				flux[0] = 1 - magnitude(hamiltonArg);
 				flux[1] = 0;
 				break;
-			case 3: { // symmetry
-				auto symmetryVector = array<double, 3>{cos(valueSup) * cos(value), cos(valueSup) * sin(value), sin(valueSup)};
-				hamiltonArg = multiplication(
-					crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector),2
-				);
+			case SYMMETRY: {
+				auto &symmetryVector = symmetryConditions[nodeIndex];
+				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				flux[0] = 1 - magnitude(hamiltonArg);
+				break;
+			}
+			case OUTLET_SYMMETRY: {
+				auto &symmetryVector = symmetryConditions[nodeIndex];
+				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
+				flux[0] = 1 - magnitude(hamiltonArg);
+				flux[1] = 0;
 				break;
 			}
 			default:
@@ -204,6 +206,50 @@ void computeResults() {
 		auto &flux = computationData.flux[node];
 		uVertex += timeStep * (flux[0] + input.diffusiveWeight * flux[1]);
 		timeTotal += timeStep;
+	}
+}
+
+void setBoundaryConditions() {
+	boundaryConditions = vector<uint>(mesh.nodes.size(), 0);
+	symmetryConditions.clear();
+	for (uint node = 0; node < nodeConditions.size(); ++node) {
+		auto &conditions = nodeConditions[node];
+		auto &current = boundaryConditions[node];
+		for (auto &condition: conditions) {
+			if (current == INLET)
+				break;
+			auto &type = boundaries[condition].type;
+			switch (type) {
+				case INLET:
+					current = INLET;
+					break;
+				case OUTLET:
+					if (current == SYMMETRY || current == OUTLET_SYMMETRY)
+						current = OUTLET_SYMMETRY;
+					else
+						current = OUTLET;
+					break;
+				case SYMMETRY: {
+					if (current == OUTLET || current == OUTLET_SYMMETRY)
+						current = OUTLET_SYMMETRY;
+					else
+						current = SYMMETRY;
+					auto angleZ = boundaries[condition].value[0];
+					auto angleY = boundaries[condition].value[1];
+					array<double, 3> symmetryVector = {cos(angleZ) * cos(angleY), cos(angleZ) * sin(angleY), - sin(angleZ)};
+
+					if (symmetryConditions.find(node) == symmetryConditions.end()) {
+						symmetryConditions.insert(pair<uint, array<double, 3>>(node, symmetryVector));
+					} else {
+						auto &symmetryVectorNode = symmetryConditions[node];
+						symmetryVectorNode = Vectors::normalization(Vectors::subtraction(symmetryVectorNode, symmetryVector));
+					}
+					break;
+				}
+				default:
+					throw invalid_argument("Unknown boundary condition in node " + to_string(node));
+			}
+		}
 	}
 }
 }

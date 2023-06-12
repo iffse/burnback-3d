@@ -70,4 +70,5 @@ void ApplyBoundaryConditions();
 
 namespace Nodes {
 void computeResults();
+void setBoundaryConditions();
 }

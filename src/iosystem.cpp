@@ -5,7 +5,7 @@
 #include <src/headers/iosystem.h>
 #include <src/headers/globals.h>
 #include <src/headers/plotData.h>
-// #include <src/headers/operations.h>
+#include <src/headers/operations.h>
 // #include <src/headers/interface.h>
 
 #include <nlohmann/json.hpp>
@@ -52,6 +52,7 @@ void readMesh(std::string &filepath) {
 	auto &conditions = json["conditions"];
 	try {
 		boundaries.clear();
+		nodeConditions = vector<vector<uint>>(mesh.nodes.size());
 		for (auto &boundary : conditions["boundary"]) {
 			auto &tag = boundary["tag"];
 			if (tag < 1)
@@ -75,18 +76,11 @@ void readMesh(std::string &filepath) {
 			auto &triangle = mesh.triangles[triangleIndex];
 			for (auto &_node: triangle) {
 				auto node = _node - 1;
-				auto &current = boundaryConditions[node];
-				if (current == 0) {
-					current = condition;
-					continue;
-				}
-				auto &type = boundaries[current].type;
-				auto &newType = boundaries[condition].type;
-				if (newType < type)
-					current = condition;
+				nodeConditions[node].push_back(condition);
 			}
 			triangleIndex++;
 		}
+		Nodes::setBoundaryConditions();
 	} catch(...) {
 		throw std::invalid_argument("Unable to read boundary conditions from JSON file. Missing boundary field or wrong format?");
 		return;
