@@ -302,6 +302,8 @@ void Actions::updateIsosurface(double value) {
 }
 
 void Actions::clearCache() {
+	if (tmpDir == "")
+		return;
 	QDir dir(tmpDir);
 	dir.removeRecursively();
 }
