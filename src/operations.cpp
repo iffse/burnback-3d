@@ -181,13 +181,14 @@ void ApplyBoundaryConditions(){
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				flux[0] = 1 - magnitude(hamiltonArg);
+				flux[1] *= 2;
 				break;
 			}
 			case OUTLET_SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] = 0;
+				flux[1] *= 2;
 				break;
 			}
 			default:
@@ -236,7 +237,11 @@ void setBoundaryConditions() {
 						current = SYMMETRY;
 					auto angleZ = boundaries[condition].value[0];
 					auto angleY = boundaries[condition].value[1];
-					array<double, 3> symmetryVector = {cos(angleZ) * cos(angleY), cos(angleZ) * sin(angleY), - sin(angleZ)};
+					array<double, 3> symmetryVector = {
+						cos(angleZ) * cos(angleY),
+						sin(angleZ) * cos(angleY),
+						- sin(angleY)
+					};
 
 					if (symmetryConditions.find(node) == symmetryConditions.end()) {
 						symmetryConditions.insert(pair<uint, array<double, 3>>(node, symmetryVector));

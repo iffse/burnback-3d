@@ -76,6 +76,9 @@ void readMesh(std::string &filepath) {
 			auto &triangle = mesh.triangles[triangleIndex];
 			for (auto &_node: triangle) {
 				auto node = _node - 1;
+				// check if condition already exists
+				if (find(nodeConditions[node].begin(), nodeConditions[node].end(), condition) != nodeConditions[node].end())
+					continue;
 				nodeConditions[node].push_back(condition);
 			}
 			triangleIndex++;
