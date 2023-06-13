@@ -217,6 +217,8 @@ void Actions::worker() {
 
 void Actions::afterWorker() {
 	root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+	auto &max_uVertex = *std::max_element(computationData.uVertex.begin(), computationData.uVertex.end());
+	root->findChild<QObject*>("isosurfaceSlider")->setProperty("to", max_uVertex);
 
 	tmpDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 	if (tmpDir == "") {

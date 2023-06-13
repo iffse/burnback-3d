@@ -10,7 +10,7 @@ Item {
 			id: slider
 			Layout.fillWidth: true
 			from: 0
-			value: 0
+			value: 0.5
 			to: 1
 			onPressedChanged: if (!pressed) actions.updateIsosurface(value)
 			onValueChanged: label.text = value.toFixed(4)
