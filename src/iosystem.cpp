@@ -93,22 +93,36 @@ void readMesh(std::string &filepath) {
 	angleTotal = std::vector<double>(mesh.nodes.size());
 }
 void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
-	json json;
-	json["uVertex"] = computationData.uVertex;
-	vector<double> x, y, z;
-	x = y = z = vector<double>(mesh.nodes.size());
-	for (uint i = 0; i < mesh.nodes.size(); i++) {
-		x[i] = mesh.nodes[i][0];
-		y[i] = mesh.nodes[i][1];
-		z[i] = mesh.nodes[i][2];
-	}
-	json["x"] = x;
-	json["y"] = y;
-	json["z"] = z;
+	fstream originalFile(origin);
+	json results;
+	results["uVertex"] = computationData.uVertex;
+	results["duVertex"] = computationData.gradient;
+	results["fluxes"] = computationData.flux;
+	results["timeStep"] = timeStep;
+	results["timeTotal"] = timeTotal;
+	// results["error"] = errorIter;
 
-	ofstream file(filepath);
-	file << (pretty ? json.dump(4) : json.dump());
+	try {
+		json jsonFile = json::parse(originalFile);
+		jsonFile["burnbackResults"] = results;
+
+		ofstream file(filepath);
+		if (pretty)
+			file << setw(4) << jsonFile << endl;
+		else
+		file << jsonFile << endl;
+	} catch (...) {
+		ofstream file(filepath);
+		json jsonFile;
+		jsonFile["burnbackResults"] = results;
+		if (pretty)
+			file << setw(4) << jsonFile << endl;
+		else
+			file << jsonFile << endl;
+		throw std::invalid_argument("Unable to parse JSON file. Invalid JSON file?\nA file with only results is created.");
+	}
 }
+
 void updateBoundaries(std::string  &filepath, bool &pretty);
 }//}}}
 

@@ -168,7 +168,7 @@ void Actions::worker() {
 		Tetrahedra::computeFluxes();
 		Triangles::ApplyBoundaryConditions();
 		Nodes::computeResults();
-		
+
 
 		// auto error = getError();
 		// errorIter[currentIter] = error;
@@ -313,3 +313,27 @@ void Actions::clearCache() {
 void Actions::setCullingMethod(uint method) {
 	emit setCulling(method);
 }
+
+void Actions::exportData(QString filepath, bool pretty) {
+	auto origin = root->findChild<QObject*>("fileDialog")->property("fileUrl").toString();
+
+	clearSubstring(filepath);
+	clearSubstring(origin);
+
+	// add .json if filepath doesn't have it
+	if (!filepath.endsWith(".json"))
+		filepath += ".json";
+
+	auto originPath = origin.toStdString();
+	auto filePath = filepath.toStdString();
+
+	appendOutput("Exporting data to " + filepath);
+	try {
+		Json::writeData(filePath, originPath, pretty);
+	} catch (const std::exception &e) {
+		appendOutput("Error while exporting data: " + QString(e.what()));
+	} catch (...) {
+		appendOutput("Error while exporting data");
+	}
+}
+

@@ -33,7 +33,7 @@ public slots:
 	void updateIsosurface(double value);
 	void clearCache();
 	void setCullingMethod(uint method);
-	// void exportData(QString filepath, bool pretty);
+	void exportData(QString filepath, bool pretty);
 	// std::vector<QString> getBoundaries();
 	// void updateBoundaries(bool saveToFile, bool pretty);
 	// QString getRecession();

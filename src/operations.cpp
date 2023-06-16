@@ -128,7 +128,7 @@ void computeMeanGradient() {
 }
 void computeFluxes() {
 	computationData.hamiltonArg = vector<array<double, 3>>(mesh.nodes.size());
-	computationData.flux = vector<array<double, 2>>(mesh.nodes.size());
+	computationData.flux.fill(vector<double>(mesh.nodes.size()));
 
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
@@ -146,11 +146,11 @@ void computeFluxes() {
 		uint vertexIndex = 0;
 		for (auto &_node: mesh.tetrahedra[tetrahedra]) {
 			const auto node = _node - 1;
-			const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][vertexIndex];
+			// const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][vertexIndex];
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
 			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertexIndex];
-			auto &flux = computationData.flux[node];
-			flux[1] += scalarProduct(gradient, normal) * weight;
+			auto &flux = computationData.flux[1][node];
+			flux += scalarProduct(gradient, normal) * weight;
 			vertexIndex++;
 		}
 	}
@@ -162,33 +162,34 @@ namespace Triangles {//{{{
 void ApplyBoundaryConditions(){
 	uint nodeIndex = 0;
 	for (auto &type: boundaryConditions) {
-		auto &flux = computationData.flux[nodeIndex];
+		auto &fluxHamiltonian = computationData.flux[0][nodeIndex];
+		auto &fluxDiffusive = computationData.flux[1][nodeIndex];
 		auto hamiltonArg = computationData.hamiltonArg[nodeIndex];
 
 		switch (type) {
 			case NO_CONDITION:
-				flux[0] = 1 - magnitude(hamiltonArg);
+				fluxHamiltonian = 1 - magnitude(hamiltonArg);
 				break;
 			case INLET:
-				flux[0] = 0;
-				flux[1] = 0;
+				fluxHamiltonian = 0;
+				fluxDiffusive = 0;
 				break;
 			case OUTLET:
-				flux[0] = 1 - magnitude(hamiltonArg);
-				// flux[1] = 0;
+				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				// fluxDiffusive = 0;
 				break;
 			case SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
-				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] *= 2;
+				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				fluxDiffusive *= 2;
 				break;
 			}
 			case OUTLET_SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
-				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] *= 2;
+				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				fluxDiffusive *= 2;
 				break;
 			}
 			default:
@@ -204,8 +205,8 @@ namespace Nodes {//{{{
 void computeResults() {
 	for (uint node = 0; node < mesh.nodes.size(); ++node) {
 		auto &uVertex = computationData.uVertex[node];
-		auto &flux = computationData.flux[node];
-		uVertex += timeStep * (flux[0] + input.diffusiveWeight * flux[1]);
+		auto &flux = computationData.flux;
+		uVertex += timeStep * (flux[0][node] + input.diffusiveWeight * flux[1][node]);
 		timeTotal += timeStep;
 	}
 }
