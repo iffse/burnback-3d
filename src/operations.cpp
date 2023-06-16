@@ -150,7 +150,7 @@ void computeFluxes() {
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
 			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertexIndex];
 			auto &flux = computationData.flux[node];
-			flux[1] += area * scalarProduct(gradient, normal) * weight;
+			flux[1] += scalarProduct(gradient, normal) * weight;
 			vertexIndex++;
 		}
 	}
@@ -175,7 +175,7 @@ void ApplyBoundaryConditions(){
 				break;
 			case OUTLET:
 				flux[0] = 1 - magnitude(hamiltonArg);
-				flux[1] = 0;
+				// flux[1] = 0;
 				break;
 			case SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
