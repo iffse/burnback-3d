@@ -182,14 +182,14 @@ void ApplyBoundaryConditions(){
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				fluxHamiltonian = 1 - magnitude(hamiltonArg);
-				fluxDiffusive *= 2;
+				// fluxDiffusive *= 2;
 				break;
 			}
 			case OUTLET_SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				fluxHamiltonian = 1 - magnitude(hamiltonArg);
-				fluxDiffusive *= 2;
+				// fluxDiffusive *= 2;
 				break;
 			}
 			default:
