@@ -36,3 +36,5 @@ inline uint currentIter = 0;
 inline bool running = false;
 
 inline uint drawCount = 0;
+
+inline std::vector<double> recession;

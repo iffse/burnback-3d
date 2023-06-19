@@ -48,9 +48,43 @@ MenuBar {
 			onTriggered: Qt.quit()
 		}
 	}
-	Menu {
+		Menu {
+		Material.background: menuBar.Material.background
+		title: qsTr("Conditions")
+		Action {
+			text: qsTr("Boundary conditions")
+			onTriggered: {
+				var component = Qt.createComponent("BoundaryPanel.qml");
+				var window = component.createObject(root)
+				window.show()
+			}
+		}
+		Action {
+			text: qsTr("Recession conditions") 
+			onTriggered: {
+				var component = Qt.createComponent("RecessionPanel.qml");
+				var window = component.createObject(root)
+				window.show()
+			}
+		}
+	}
+		Menu {
 		Material.background: menuBar.Material.background
 		title: qsTr("Help")
-		Action { text: qsTr("About") }
+		Action {
+			text: qsTr("About")
+			onTriggered: aboutDialog.open()
+		}
+		MessageDialog {
+			id: aboutDialog
+			title: qsTr("About")
+			text: qsTr(
+				"Burnback analysis for solid propellant rockets, with Time Marching Method\n\n" +
+				"Distributed under AGPL3 license\n" +
+				"Source code available at https://codeberg.org/iff/burnback-3D"
+			)
+			standardButtons: StandardButton.Ok
+		}
 	}
+
 }

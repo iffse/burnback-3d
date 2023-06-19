@@ -89,12 +89,21 @@ void readMesh(std::string &filepath) {
 		return;
 	}
 
+	try {
+		recession = conditions["recession"].get<vector<double>>();
+		if (recession.size() == 0)
+			recession = vector<double>(mesh.nodes.size(), 1);
+	} catch(...) {
+		recession = vector<double>(mesh.nodes.size(), 1);
+	}
+
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 	angleTotal = std::vector<double>(mesh.nodes.size());
 }
 void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
 	fstream originalFile(origin);
 	json results;
+
 	results["uVertex"] = computationData.uVertex;
 	results["duVertex"] = computationData.gradient;
 	results["fluxes"] = computationData.flux;
@@ -123,7 +132,49 @@ void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
 	}
 }
 
-void updateBoundaries(std::string  &filepath, bool &pretty);
+void updateBoundaries(string &filepath, bool &pretty) {
+	fstream originalFile(filepath);
+	json jsonFile;
+	try {
+		jsonFile = json::parse(originalFile);
+	} catch (...) {
+		throw std::invalid_argument("Unable to parse JSON file. Invalid JSON file?");
+		return;
+	}
+
+	json updatedBoundaries;
+	for (auto &[key, boundary] : boundaries) {
+		if (key == 0)
+			continue;
+		auto &boundaryTag = key;
+		auto boundaryValue = boundary.value;
+		auto boundaryType = "";
+		switch (boundary.type) {
+			case 1:
+				boundaryType = "inlet";
+				break;
+			case 2:
+				boundaryType = "outlet";
+				break;
+			case 3:
+				boundaryType = "symmetry";
+				boundaryValue[0] = boundaryValue[0] * 180 / M_PI;
+				boundaryValue[1] = boundaryValue[1] * 180 / M_PI;
+				break;
+		};
+
+		auto &boundaryDescription = boundary.description;
+		updatedBoundaries.push_back({{"tag", boundaryTag}, {"type", boundaryType}, {"value", boundaryValue}, {"description", boundaryDescription}});
+	}
+	jsonFile["conditions"]["boundary"] = updatedBoundaries;
+
+	ofstream file(filepath);
+	if (pretty)
+		file << setw(4) << jsonFile << endl;
+	else
+		file << jsonFile << endl;
+}
+
 }//}}}
 
 namespace WriteMesh {

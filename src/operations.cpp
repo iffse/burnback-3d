@@ -85,7 +85,8 @@ void computeGeometry() {
 			tetrahedraGeometry.vertexWeight[tetrahedra][vertex] = tetrahedraGeometry.solidAngle[tetrahedra][vertex] / angleTotal[node];
 		}
 	}
-	timeStep *= input.cfl / 6;
+	auto maxRecession = *max_element(recession.begin(), recession.end());
+	timeStep *= input.cfl / (6 * maxRecession);
 }
 }
 //}}}
@@ -168,27 +169,28 @@ void ApplyBoundaryConditions(){
 
 		switch (type) {
 			case NO_CONDITION:
-				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
 				break;
 			case INLET:
 				fluxHamiltonian = 0;
 				fluxDiffusive = 0;
 				break;
 			case OUTLET:
-				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
+				fluxDiffusive /= 2;
 				// fluxDiffusive = 0;
 				break;
 			case SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
-				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
 				// fluxDiffusive *= 2;
 				break;
 			}
 			case OUTLET_SYMMETRY: {
 				auto &symmetryVector = symmetryConditions[nodeIndex];
 				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
-				fluxHamiltonian = 1 - magnitude(hamiltonArg);
+				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
 				// fluxDiffusive *= 2;
 				break;
 			}
@@ -206,9 +208,18 @@ void computeResults() {
 	for (uint node = 0; node < mesh.nodes.size(); ++node) {
 		auto &uVertex = computationData.uVertex[node];
 		auto &flux = computationData.flux;
-		uVertex += timeStep * (flux[0][node] + input.diffusiveWeight * flux[1][node]);
+		uVertex += timeStep * (flux[0][node] + input.diffusiveWeight * recession[node] * flux[1][node]);
 		timeTotal += timeStep;
 	}
+}
+
+double getError() {
+	auto error = 0.0;
+	for (uint node = 0; node < mesh.nodes.size(); ++node)
+		error += pow(computationData.flux[0][node], 2);
+
+	error = sqrt(error) / mesh.nodes.size();
+	return error;
 }
 
 void setBoundaryConditions() {

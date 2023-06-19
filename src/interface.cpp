@@ -170,26 +170,24 @@ void Actions::worker() {
 		Nodes::computeResults();
 
 
-		// auto error = getError();
-		// errorIter[currentIter] = error;
+		auto error = Nodes::getError();
+		errorIter[currentIter] = error;
 
 		if (linesToPrint != "")
 			linesToPrint += "\n";
-		// linesToPrint += "Iteration: " + QString::number(currentIter + 1) + " Time: " + QString::number(timeTotal) + " Error: " + QString::number(error * 100) + "%";
-		linesToPrint += "Iteration: " + QString::number(currentIter + 1) + " Time: " + QString::number(timeTotal);
+		linesToPrint += "Iteration: " + QString::number(currentIter + 1) + " Time: " + QString::number(timeTotal) + " Error: " + QString::number(error * 100) + "%";
 
-		// if (error > 1) {
-		// 	if (linesToPrint != "") {
-		// 		emit newOutput(linesToPrint);
-		// 		emit updateProgress(currentIter + 1, targetIter);
-		// 	}
-		// 	emit newOutput("Error: Divergence detected. Stopping. Try reducing the CFL.");
-		// 	emit newOutput("--> Stopped");
-		// 	root->findChild<QObject*>("runButton")->setProperty("text", "Run");
-		// 	setBurningArea();
-		// 	afterWorker();
-		// 	return;
-		// }
+		if (error > 1) {
+			if (linesToPrint != "") {
+				emit newOutput(linesToPrint);
+				emit updateProgress(currentIter + 1, input.targetIter);
+			}
+			emit newOutput("Error: Divergence detected. Stopping. Try reducing the CFL.");
+			emit newOutput("--> Stopped");
+			root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+			afterWorker();
+			return;
+		}
 
 		auto now = std::chrono::system_clock::now();
 		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - clock).count() > 10) {
@@ -220,14 +218,6 @@ void Actions::afterWorker() {
 	auto &max_uVertex = *std::max_element(computationData.uVertex.begin(), computationData.uVertex.end());
 	root->findChild<QObject*>("isosurfaceSlider")->setProperty("to", max_uVertex);
 
-	tmpDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-	if (tmpDir == "") {
-		tmpDir = QDir::currentPath();
-	}
-	if (!tmpDir.endsWith("/")) {
-		tmpDir += "/";
-	}
-	tmpDir += "burnback-3d/";
 	// make sure the directory exists
 	QDir dir(tmpDir);
 	if (!dir.exists())
@@ -260,27 +250,6 @@ void Actions::afterWorker() {
 
 	double isosurfaceValue = root->findChild<QObject*>("isosurfaceSlider")->property("value").toDouble();
 	previewIsosurface(isosurfaceValue);
-
-	// string filename = "results.json";
-	// string origin = "";
-	// bool pretty = true;
-	// Json::writeData(filename, origin, pretty);
-
-	// auto data = isosurfaceData(0.5);
-
-	// for (uint i = 0; i < data.triangles.size(); ++i) {
-	// 	qDebug() << data.triangles[i][0] << data.triangles[i][1] << data.triangles[i][2];
-	// }
-
-	// for (uint i = 0; i < data.nodes.size(); ++i) {
-	// 	qDebug() << data.nodes[i][0] << data.nodes[i][1] << data.nodes[i][2];
-	// }
-
-	// for (uint i = 0; i < data.normals.size(); ++i) {
-	// 	qDebug() << data.normals[i][0] << data.normals[i][1] << data.normals[i][2];
-	// }
-
-
 }
 
 void Actions::previewIsosurface(double value) {
@@ -336,4 +305,111 @@ void Actions::exportData(QString filepath, bool pretty) {
 		appendOutput("Error while exporting data");
 	}
 }
+
+vector<QString> Actions::getBoundaries() {
+	auto numBoundaries = boundaries.size() - 1;
+	vector<QString> boundariesVector = vector<QString>(numBoundaries * 4);
+
+	auto index = 0;
+	for (const auto &[key, value]: boundaries) {
+		if (key == 0)
+			continue;
+		boundariesVector[index] = QString::number(key);
+		boundariesVector[index + 1] = QString::number(value.type - 1);
+		try {
+			switch (value.type){
+				case INLET:
+					boundariesVector[index + 2] = QString::number(value.value[0]);
+					break;
+				case OUTLET:
+					boundariesVector[index + 2] = "";
+					break;
+				case SYMMETRY:
+					boundariesVector[index + 2] = QString::number(value.value[0] * 180 / M_PI) + " "
+					+ QString::number(value.value[1] * 180 / M_PI) ;
+					break;
+			}
+		} catch (...) {
+			boundariesVector[index + 2] = "";
+		}
+		try {
+			boundariesVector[index + 3] = QString::fromStdString(value.description);
+		} catch (...) {
+			boundariesVector[index + 3] = "";
+		}
+		index += 4;
+	}
+	return boundariesVector;
+}
+
+void Actions::updateBoundaries(bool saveToFile, bool pretty) {
+	for (auto &[key, boundary]: boundaries) {
+		if (key == 0)
+			continue;
+		auto type = root->findChild<QObject*>("boundaryComboBox" + QString::number(key))->property("currentIndex").toInt() + 1;
+		auto value = root->findChild<QObject*>("boundaryValue" + QString::number(key))->property("text").toString();
+		// split string
+		auto values = value.split(" ");
+		auto value1 = 0.0;
+		auto value2 = 0.0;
+		if (type == SYMMETRY) {
+			value1 = values[0].toDouble() * M_PI / 180;
+			value2 = values[1].toDouble() * M_PI / 180;
+		} else {
+			value1 = values[0].toDouble();
+		}
+		auto description = root->findChild<QObject*>("boundaryDescription" + QString::number(key))->property("text").toString();
+
+		boundaries[key] = Boundary {
+			uint(type),
+			std::array<double, 2>{value1, value2},
+			description.toStdString()
+		};
+		Nodes::setBoundaryConditions();
+	}
+
+	appendOutput("Boundaries updated");
+
+	if (saveToFile){
+		auto filepath = root->findChild<QObject*>("fileDialog")->property("fileUrl").toString();
+		clearSubstring(filepath);
+
+		auto filepathString = filepath.toStdString();
+
+		try {
+			Json::updateBoundaries(filepathString, pretty);
+			appendOutput("Updated to " + filepath);
+		} catch (const std::exception &e) {
+			appendOutput("Error while updating boundaries: " + QString(e.what()));
+		} catch (...) {
+			appendOutput("Error while updating boundaries");
+		}
+	}
+}
+
+QString Actions::getRecession() {
+	QString output = "";
+	for (const auto &value: recession) {
+		output +=  QString::number(value) + "\n";
+	}
+	output.chop(1);
+	return output;
+}
+QString Actions::getRecession(QString filepath) {
+	QString output = "";
+	clearSubstring(filepath);
+	QFile file(filepath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		appendOutput("Error while opening file " + filepath);
+		return "";
+	}
+	QTextStream in(&file);
+	while (!in.atEnd()) {
+		output += in.readLine() + "\n";
+	}
+	file.close();
+	output.chop(1);
+	return output;
+}
+
 

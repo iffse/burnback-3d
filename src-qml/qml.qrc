@@ -3,6 +3,8 @@
 		<file>qtquickcontrols2.conf</file>
 		<file>main.qml</file>
 		<file>AplicationMenu.qml</file>
+		<file>BoundaryPanel.qml</file>
+		<file>RecessionPanel.qml</file>
 		<file>Tabs.qml</file>
 		<file>InputConf.qml</file>
 		<file>OutputConf.qml</file>

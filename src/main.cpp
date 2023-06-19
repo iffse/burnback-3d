@@ -2,6 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFontDatabase>
+#include <QDir>
+#include <QStandardPaths>
 
 #include <src/headers/interface.h>
 #include <src/headers/globals.h>
@@ -36,6 +38,16 @@ int main(int argc, char *argv[])
 	const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 	QObject *output = root->findChild<QObject*>("output");
 	output->setProperty("font", fixedFont);
+
+	// create temporary directory path to store isosurfaces
+	tmpDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+	if (tmpDir == "") {
+		tmpDir = QDir::currentPath();
+	}
+	if (!tmpDir.endsWith("/")) {
+		tmpDir += "/";
+	}
+	tmpDir += "burnback-3d/";
 
 	return app.exec();
 }

@@ -34,9 +34,9 @@ public slots:
 	void clearCache();
 	void setCullingMethod(uint method);
 	void exportData(QString filepath, bool pretty);
-	// std::vector<QString> getBoundaries();
-	// void updateBoundaries(bool saveToFile, bool pretty);
-	// QString getRecession();
-	// QString getRecession(QString filepath);
+	std::vector<QString> getBoundaries();
+	void updateBoundaries(bool saveToFile, bool pretty);
+	QString getRecession();
+	QString getRecession(QString filepath);
 };
 
