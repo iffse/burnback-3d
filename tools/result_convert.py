@@ -50,15 +50,20 @@ cells = [
 	("tetra", mesh['tetrahedra']),
 ]
 point_data = {
-	"uVertex": results['uVertex'],
+	"time": results['uVertex'],
 	"fluxHamiltonian": results['fluxes'][0],
 	"fluxDiffusive": results['fluxes'][1],
+}
+
+cell_data = {
+	"gradient": [results['duVertex']],
 }
 
 mesh = meshio.Mesh(
 	points=point,
 	cells=cells,
 	point_data=point_data,
+	cell_data=cell_data,
 )
 
 print('Writing to ' + output_name)
