@@ -128,7 +128,7 @@ void computeMeanGradient() {
 	}
 }
 void computeFluxes() {
-	computationData.hamiltonArg = vector<array<double, 3>>(mesh.nodes.size());
+	computationData.vertexGradient = vector<array<double, 3>>(mesh.nodes.size());
 	computationData.flux.fill(vector<double>(mesh.nodes.size()));
 
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
@@ -136,8 +136,8 @@ void computeFluxes() {
 		for (uint vertex = 0; vertex < 4; ++vertex) {
 			const auto node = mesh.tetrahedra[tetrahedra][vertex] - 1;
 			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertex];
-			auto &hamiltonArg = computationData.hamiltonArg[node];
-			hamiltonArg = summation(hamiltonArg, multiplication(gradient, weight));
+			auto &vertexGradient = computationData.vertexGradient[node];
+			vertexGradient = summation(vertexGradient, multiplication(gradient, weight));
 		}
 	}
 
@@ -147,11 +147,28 @@ void computeFluxes() {
 		uint vertexIndex = 0;
 		for (auto &_node: mesh.tetrahedra[tetrahedra]) {
 			const auto node = _node - 1;
+			auto &vertexGradient = computationData.vertexGradient[node];
+			const auto &boundaryType = boundaryConditions[node];
+			if (boundaryType == SYMMETRY || boundaryType == OUTLET_SYMMETRY) {
+				auto &symmetryVector = symmetryConditions[node];
+				if (symmetryVector.size() == 1) {
+					vertexGradient = crossProduct(crossProduct(symmetryVector[0], vertexGradient), symmetryVector[0]);
+				} else {
+					auto &symmetry1 = symmetryVector[0];
+					auto &symmetry2 = symmetryVector[1];
+
+					// vertexGradient = crossProduct(crossProduct(crossProduct(symmetry2, crossProduct(symmetry1, vertexGradient)), symmetry1), symmetry2);
+					auto s1 = multiplication(symmetry1, scalarProduct(vertexGradient, symmetry1));
+					auto s2 = multiplication(symmetry2, scalarProduct(vertexGradient, symmetry2));
+					vertexGradient = subtraction(vertexGradient, summation(s1, s2));
+				}
+			}
 			// const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][vertexIndex];
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
 			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertexIndex];
 			auto &flux = computationData.flux[1][node];
-			flux += scalarProduct(gradient, normal) * weight;
+			auto substractedGradient = subtraction(gradient, vertexGradient);
+			flux += scalarProduct(substractedGradient, normal) * weight;
 			vertexIndex++;
 		}
 	}
@@ -165,7 +182,7 @@ void ApplyBoundaryConditions(){
 	for (auto &type: boundaryConditions) {
 		auto &fluxHamiltonian = computationData.flux[0][nodeIndex];
 		auto &fluxDiffusive = computationData.flux[1][nodeIndex];
-		auto hamiltonArg = computationData.hamiltonArg[nodeIndex];
+		auto hamiltonArg = computationData.vertexGradient[nodeIndex];
 
 		switch (type) {
 			case NO_CONDITION:
@@ -177,21 +194,21 @@ void ApplyBoundaryConditions(){
 				break;
 			case OUTLET:
 				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
-				fluxDiffusive /= 2;
+				// fluxDiffusive /= 2;
 				// fluxDiffusive = 0;
 				break;
 			case SYMMETRY: {
-				auto &symmetryVector = symmetryConditions[nodeIndex];
-				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
+				// auto &symmetryVector = symmetryConditions[nodeIndex];
+				// hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
 				// fluxDiffusive *= 2;
 				break;
 			}
 			case OUTLET_SYMMETRY: {
-				auto &symmetryVector = symmetryConditions[nodeIndex];
-				hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
+				// auto &symmetryVector = symmetryConditions[nodeIndex];
+				// hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
-				// fluxDiffusive *= 2;
+				// fluxDiffusive /= 2;
 				break;
 			}
 			default:
@@ -256,10 +273,11 @@ void setBoundaryConditions() {
 					};
 
 					if (symmetryConditions.find(node) == symmetryConditions.end()) {
-						symmetryConditions.insert(pair<uint, array<double, 3>>(node, symmetryVector));
+						symmetryConditions.insert(pair<uint, vector<array<double, 3>>>(node, {symmetryVector}));
 					} else {
-						auto &symmetryVectorNode = symmetryConditions[node];
-						symmetryVectorNode = Vectors::normalization(Vectors::subtraction(symmetryVectorNode, symmetryVector));
+						if (symmetryConditions[node].size() > 2)
+							throw invalid_argument("More than 2 symmetry vector in node " + to_string(node) + ". This is a point.");
+						symmetryConditions[node].push_back(symmetryVector);
 					}
 					break;
 				}

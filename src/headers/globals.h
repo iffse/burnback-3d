@@ -25,7 +25,7 @@ inline std::vector<double> angleTotal;
 inline std::map<uint, Boundary> boundaries;
 inline std::vector<std::vector<uint>> nodeConditions;
 inline std::vector<uint> boundaryConditions;
-inline std::map<uint, std::array<double, 3>> symmetryConditions;
+inline std::map<uint, std::vector<std::array<double, 3>>> symmetryConditions;
 inline ComputationData computationData;
 
 inline double timeStep;
