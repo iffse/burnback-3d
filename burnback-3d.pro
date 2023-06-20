@@ -3,8 +3,6 @@ QT += quick
 QT += widgets
 CONFIG += c++17
 
-QMAKE_LINK=clang++
-QMAKE_CXX = clang++
 CONFIG(sanitizer) {
 	message("Sanitizer enabled")
 	CONFIG += sanitizer sanitize_address sanitize_undefined
@@ -12,6 +10,8 @@ CONFIG(sanitizer) {
 
 
 CONFIG(debug, debug|release) {
+	QMAKE_LINK=clang++
+	QMAKE_CXX = clang++
 	DESTDIR = target/debug
 	DEFINES += DEBUG
 } else {

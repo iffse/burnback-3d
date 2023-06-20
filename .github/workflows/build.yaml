@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        qt: [5.15.2]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Set up Qt ${{ matrix.qt }} on ${{ matrix.os }}
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ matrix.qt }}
+        modules: 'qtcharts'
+        cache: true
+    - name: Set up MSVC Developer Command Prompt (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: TheMrMilchmann/setup-msvc-dev@v2
+      with:
+        arch: x64
+
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        qmake -config release
+        nmake
+        mkdir target\distribution
+        mv target/release/burnback-3d.exe target/distribution/
+        cd target/distribution
+        windeployqt.exe burnback-3d.exe --qmldir=../../src-qml
+      shell: cmd
+
+    - name: Build (MacOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        qmake -config release
+
+        make
+        mkdir target/distribution
+        mv target/release/burnback-3d.app target/distribution/
+        cd target/distribution
+        macdeployqt burnback-3d.app -qmldir=../../src-qml
+
+    - name: Move additional files
+      run: |
+        cp -r examples target/distribution/
+        cp -r tools target/distribution/
+
+    - name: Zipping files
+      uses: vimtor/action-zip@v1.1
+      with:
+        files: target/distribution/
+        dest: burnback-3d-${{ matrix.os }}.zip
+
+    - name: Uploading to release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: burnback-3d-${{ matrix.os }}.zip
+        allowUpdates: true
+        makeLatest: true

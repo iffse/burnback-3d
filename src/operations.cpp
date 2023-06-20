@@ -167,8 +167,8 @@ void computeFluxes() {
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
 			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertexIndex];
 			auto &flux = computationData.flux[1][node];
-			auto substractedGradient = subtraction(gradient, vertexGradient);
-			flux += scalarProduct(substractedGradient, normal) * weight;
+			auto subtractedGradient = subtraction(gradient, vertexGradient);
+			flux += scalarProduct(subtractedGradient, normal) * weight;
 			vertexIndex++;
 		}
 	}
@@ -194,21 +194,13 @@ void ApplyBoundaryConditions(){
 				break;
 			case OUTLET:
 				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
-				// fluxDiffusive /= 2;
-				// fluxDiffusive = 0;
 				break;
 			case SYMMETRY: {
-				// auto &symmetryVector = symmetryConditions[nodeIndex];
-				// hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
-				// fluxDiffusive *= 2;
 				break;
 			}
 			case OUTLET_SYMMETRY: {
-				// auto &symmetryVector = symmetryConditions[nodeIndex];
-				// hamiltonArg = crossProduct(crossProduct(symmetryVector, hamiltonArg), symmetryVector);
 				fluxHamiltonian = 1 - recession[nodeIndex] * magnitude(hamiltonArg);
-				// fluxDiffusive /= 2;
 				break;
 			}
 			default:
