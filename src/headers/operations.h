@@ -1,6 +1,8 @@
 #pragma once
 
 #include <math.h>
+#include <src/headers/types.h>
+
 namespace Vectors {//{{{
 template <typename T>
 T crossProduct(const T &a, const T &b) {

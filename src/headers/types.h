@@ -5,6 +5,10 @@
 #include <map>
 #include <string>
 
+// this is not required in linux
+// for some reason, the compiler in windows and mac does not recognize uint
+typedef unsigned int uint;
+
 struct Input {
 	double uInitial;
 	bool resume;
