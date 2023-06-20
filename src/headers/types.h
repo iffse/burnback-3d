@@ -15,7 +15,6 @@ struct Input {
 	double cfl;
 	uint targetIter;
 	double diffusiveWeight;
-	uint diffusiveMethod;
 };
 
 struct Mesh {

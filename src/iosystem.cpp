@@ -23,7 +23,6 @@ void readInput() {//{{{
 		input.targetIter = 300;
 
 	input.diffusiveWeight = root->findChild<QObject*>("diffusiveWeight")->property("text").toDouble();
-	input.diffusiveMethod = root->findChild<QObject*>("diffusiveMethod")->property("currentIndex").toInt();
 }
 //}}}
 

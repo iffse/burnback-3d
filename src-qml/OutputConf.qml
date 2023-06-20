@@ -10,44 +10,17 @@ ScrollView {
 		width: parent.width
 
 		GroupBox {
-			title: qsTr("Diffusive method")
+			title: qsTr("Diffusive flux")
 			width: parent.width
 
-			Column {
+			LabelInput {
 				width: parent.width
-
-				ComboBox {
-					id: diffusiveMethod
-					objectName: "diffusiveMethod"
-					width: parent.width
-					currentIndex: 0
-					model: [
-						"Abgrall",
-						"Tizón",
-						"Zhang and Shu"
-					]
-				}
-
-				LabelInput {
-					width: parent.width
-					text: "Weight"
-					placeholderText: "Enter a number"
-					toolTipText: "."
-					objName: "diffusiveWeight"
-					defaultInput: "1"
-					decimals: true
-				}
-
-				LabelInput {
-					visible: diffusiveMethod.currentIndex == 1
-					width: parent.width
-					text: "Viscous CFL"
-					placeholderText: "Enter a number"
-					toolTipText: "Viscous CFL number."
-					objName: "viscousCFL"
-					defaultInput: "1"
-					decimals: true
-				}
+				text: "Weight"
+				placeholderText: "Enter a number"
+				toolTipText: "."
+				objName: "diffusiveWeight"
+				defaultInput: "1"
+				decimals: true
 			}
 		}
 

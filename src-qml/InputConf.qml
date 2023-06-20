@@ -62,15 +62,6 @@ ScrollView {
 					defaultInput: "0"
 					decimals: true
 				}
-
-				CheckBox {
-					objectName: "resume"
-					text: qsTr("Resume")
-					ToolTip.text: qsTr("Mark this checkbox if you want to resume a previous computation")
-					ToolTip.visible: hovered
-					ToolTip.delay: 500
-					hoverEnabled: true
-				}
 			}
 		}
 

@@ -94,6 +94,7 @@ void Actions::readMeshWorker(QString path) {
 void Actions::readMesh(QString filepath) {
 	running = false;
 	root->findChild<QObject*>("runButton")->setProperty("enabled", false);
+	root->findChild<QObject*>("resume")->setProperty("enabled", false);
 	appendOutput("--> Reading mesh");
 	if (filepath.isEmpty()) {
 		appendOutput("Error: No file selected");
@@ -134,6 +135,7 @@ void Actions::run() {
 		return;
 	}
 
+	root->findChild<QObject*>("resume")->setProperty("enabled", true);
 	std::thread thread(&Actions::worker, this);
 	thread.detach();
 }
