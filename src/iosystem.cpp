@@ -193,10 +193,10 @@ void IsocontourSurface(double value, std::string filepath) {
 	}
 	// write faces
 	for (auto &triangle: data.triangles) {
-		file << "f";
-		for (auto &node: triangle)
-			file << " " << node + 1;
-		file << endl;
+		file << "f" << " " << triangle[0] + 1 << " " << triangle[2] + 1 << " " << triangle[1] + 1 << endl;
+		// for (auto &node: triangle)
+		// 	file << " " << node + 1;
+		// file << endl;
 	}
 };
 

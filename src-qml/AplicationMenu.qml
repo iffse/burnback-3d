@@ -68,7 +68,29 @@ MenuBar {
 			}
 		}
 	}
-		Menu {
+	Menu {
+		Material.background: menuBar.Material.background
+		title: qsTr("Graphs")
+
+		Action {
+			text: qsTr("Burning areas")
+			onTriggered: {
+				var component = Qt.createComponent("BurningArea.qml");
+				var window = component.createObject(root)
+				window.show()
+			}
+		}
+		Action {
+			text: qsTr("Error with iterations")
+			onTriggered: {
+				var component = Qt.createComponent("ErrorIterations.qml");
+				var window = component.createObject(root)
+				window.show()
+			}
+		}
+
+	}
+	Menu {
 		Material.background: menuBar.Material.background
 		title: qsTr("Help")
 		Action {

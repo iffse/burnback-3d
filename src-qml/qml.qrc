@@ -11,7 +11,9 @@
 		<file>PlotArea.qml</file>
 		<file>LabeledSlider.qml</file>
 		<file>IsocontourSurface.qml</file>
-		<file>Graphs.qml</file>
+		<file>BurningArea.qml</file>
+		<file>ErrorIterations.qml</file>
+		<file>LabelInput.qml</file>
 		<file>Output.qml</file>
 		<file>Footer.qml</file>
 		<file>LabelInput.qml</file>

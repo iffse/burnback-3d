@@ -415,4 +415,14 @@ QString Actions::getRecession(QString filepath) {
 	return output;
 }
 
+void Actions::drawBurningArea(uint areas) {
+	if (areas < 2 || currentIter == 0)
+		return;
+	auto data = burnAreaData(areas);
+	auto &burnArea = data[0];
+	auto &burnDepth = data[1];
+	auto maxBurnArea = *max_element(burnArea.begin(), burnArea.end()) * 1.05;
+	auto maxBurnDepth = *max_element(burnDepth.begin(), burnDepth.end()) * 1.05;
 
+	emit graphBurningArea(burnDepth, burnArea, maxBurnDepth, maxBurnArea);
+}

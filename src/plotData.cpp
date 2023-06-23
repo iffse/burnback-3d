@@ -155,8 +155,19 @@ IsocontourData isosurfaceData(double value) {
 					angles[minAngleIndex] = INFINITY;
 				}
 
-				array<uint, 4> triangleVertices1 = {orderedPoints[0], orderedPoints[1], orderedPoints[2]};
-				array<uint, 4> triangleVertices2 = {orderedPoints[0], orderedPoints[2], orderedPoints[3]};
+				// minimum diagonal method for triangulation
+				// doesn't seem to have any effect
+				auto diagonal1 = subtraction(intersectionPoints[orderedPoints[0]], intersectionPoints[orderedPoints[2]]);
+				auto diagonal2 = subtraction(intersectionPoints[orderedPoints[1]], intersectionPoints[orderedPoints[3]]);
+				array<uint, 4> triangleVertices1;
+				array<uint, 4> triangleVertices2;
+				if (magnitude(diagonal1) < magnitude(diagonal2)) {
+					triangleVertices1 = {orderedPoints[0], orderedPoints[1], orderedPoints[2]};
+					triangleVertices2 = {orderedPoints[0], orderedPoints[2], orderedPoints[3]};
+				} else {
+					triangleVertices1 = {orderedPoints[0], orderedPoints[1], orderedPoints[3]};
+					triangleVertices2 = {orderedPoints[1], orderedPoints[2], orderedPoints[3]};
+				}
 
 				array<uint, 3> triangleNodes1 = {};
 				array<uint, 3> triangleNodes2 = {};
@@ -215,5 +226,37 @@ IsocontourData isosurfaceData(double value) {
 				throw runtime_error("Unexpected number of intersection points");
 		}
 	}
+	return data;
+}
+
+
+array<vector<double>, 2> burnAreaData(uint numberOfAreas) {
+	array<vector<double>, 2> data;
+	data.fill(vector<double>(numberOfAreas, 0));
+	auto &burnArea = data[0];
+	auto &burnDepth = data[1];
+
+	auto epsilon = 0.001;
+	auto uMax = *max_element(computationData.uVertex.begin(), computationData.uVertex.end());
+	auto uMin = *min_element(computationData.uVertex.begin(), computationData.uVertex.end());
+
+	uMax -= (uMax - uMin) * epsilon;
+	uMin += (uMax - uMin) * epsilon;
+
+	for (uint area = 0; area < numberOfAreas; ++area) {
+		burnDepth[area] = uMin + (uMax - uMin) * area / (numberOfAreas - 1);
+
+		auto surfaceData = isosurfaceData(burnDepth[area]);
+		for (auto &triangle : surfaceData.triangles) {
+			auto &node1 = surfaceData.nodes[triangle[0]];
+			auto &node2 = surfaceData.nodes[triangle[1]];
+			auto &node3 = surfaceData.nodes[triangle[2]];
+			auto areaTriangle = magnitude(crossProduct(subtraction(node2, node1), subtraction(node3, node1))) / 2;
+			burnArea[area] += areaTriangle;
+		}
+	}
+
+	data[0] = burnArea;
+	data[1] = burnDepth;
 	return data;
 }
