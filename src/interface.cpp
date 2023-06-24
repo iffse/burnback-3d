@@ -166,6 +166,7 @@ void Actions::worker() {
 	QString linesToPrint = "";
 	auto clock = std::chrono::system_clock::now();
 
+	vector<double> errors;
 	for (; currentIter < input.targetIter; ++currentIter) {
 		Tetrahedra::computeMeanGradient();
 		Tetrahedra::computeFluxes();
@@ -425,4 +426,11 @@ void Actions::drawBurningArea(uint areas) {
 	auto maxBurnDepth = *max_element(burnDepth.begin(), burnDepth.end()) * 1.05;
 
 	emit graphBurningArea(burnDepth, burnArea, maxBurnDepth, maxBurnArea);
+}
+
+void Actions::updateErrorIter() {
+	if (currentIter == 0)
+		return;
+	auto maxError = *max_element(errorIter.begin(), errorIter.end()) * 1.05;
+	emit errorIterUpdate(errorIter, errorIter.size(), maxError);
 }

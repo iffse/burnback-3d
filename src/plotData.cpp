@@ -239,6 +239,8 @@ array<vector<double>, 2> burnAreaData(uint numberOfAreas) {
 	auto epsilon = 0.001;
 	auto uMax = *max_element(computationData.uVertex.begin(), computationData.uVertex.end());
 	auto uMin = *min_element(computationData.uVertex.begin(), computationData.uVertex.end());
+	if (uMin < 0)
+		uMin = 0;
 
 	uMax -= (uMax - uMin) * epsilon;
 	uMin += (uMax - uMin) * epsilon;

@@ -30,7 +30,6 @@ inline ComputationData computationData;
 
 inline double timeStep;
 inline double timeTotal;
-inline std::vector<double> errorIter;
 
 inline uint currentIter = 0;
 inline bool running = false;
@@ -38,3 +37,5 @@ inline bool running = false;
 inline uint drawCount = 0;
 
 inline std::vector<double> recession;
+inline std::array<std::vector<double>, 2> burningArea;
+inline std::vector<double> errorIter;

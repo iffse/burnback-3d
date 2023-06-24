@@ -19,6 +19,8 @@ signals:
 	void setCulling(uint method);
 	void graphBurningArea(std::vector<double> depth, std::vector<double> area, double xMax, double yMax);
 	void graphErrorIter(std::vector<uint> iteration, std::vector<double> error, uint xMax, double yMax);
+	void errorIterUpdate(std::vector<double> errors, uint maxIter, double maxError);
+
 
 public slots:
 	void readMesh(QString path);
@@ -39,5 +41,6 @@ public slots:
 	QString getRecession();
 	QString getRecession(QString filepath);
 	void drawBurningArea(uint areas);
+	void updateErrorIter();
 };
 
