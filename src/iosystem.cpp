@@ -88,29 +88,33 @@ void readMesh(std::string &filepath) {
 		return;
 	}
 
-	try {
+	if (conditions.find("recession") != conditions.end()) {
 		try {
-			auto recessionCondition = conditions["recession"].get<vector<double>>();
-			if (recessionCondition.size() == 0)
-				recession = vector<double>(mesh.nodes.size(), 1);
-			else
-				recession = recessionCondition;
-			recessionAnisotropic.clear();
-			recessionMatrix.clear();
-			anisotropic = false;
+			try {
+				auto recessionCondition = conditions["recession"].get<vector<double>>();
+				if (recessionCondition.size() == 0)
+					recession = vector<double>(mesh.nodes.size(), 1);
+				else
+					recession = recessionCondition;
+				recessionAnisotropic.clear();
+				recessionMatrix.clear();
+				anisotropic = false;
+			} catch(...) {
+				auto recessionCondition = conditions["recession"].get<vector<array<double, 6>>>();
+				recession = vector<double>(mesh.nodes.size());
+				recessionAnisotropic = recessionCondition;
+				anisotropic = true;
+			}
 		} catch(...) {
-			auto recessionCondition = conditions["recession"].get<vector<array<double, 6>>>();
-			recession = vector<double>(mesh.nodes.size());
-			recessionAnisotropic = recessionCondition;
-			anisotropic = true;
+			throw std::invalid_argument("Unable to read recession conditions from JSON file. Wrong format?");
 		}
-	} catch(...) {
+	} else {
 		recession = vector<double>(mesh.nodes.size(), 1);
 		recessionAnisotropic.clear();
 		recessionMatrix.clear();
 		anisotropic = false;
-		throw std::invalid_argument("Unable to read recession conditions from JSON file. Defaulting to isotropic recession with value 1.");
 	}
+
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 	angleTotal = std::vector<double>(mesh.nodes.size());
 }
