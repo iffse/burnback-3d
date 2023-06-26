@@ -35,17 +35,20 @@ void readMesh(std::string &filepath) {
 		json = json::parse(file);
 	} catch (...) {
 		throw std::invalid_argument("Unable to parse JSON file. Invalid JSON file?");
-		return;
 	}
 
-	auto &meshData = json["mesh"];
+	for (auto &key : {"metaData", "mesh", "conditions"}) {
+		if (json.find(key) == json.end())
+			throw std::invalid_argument("Unable to read mesh data from JSON file. Missing " + string(key) + " field.");
+	}
+
 	try {
+		auto &meshData = json["mesh"];
 		mesh.nodes = meshData["nodes"];
 		mesh.triangles = meshData["triangles"];
 		mesh.tetrahedra = meshData["tetrahedra"];
 	} catch (...) {
 		throw std::invalid_argument("Unable to read mesh from JSON file. Missing mesh field or wrong format?");
-		return;
 	}
 
 	auto &conditions = json["conditions"];
@@ -85,7 +88,6 @@ void readMesh(std::string &filepath) {
 		Nodes::setBoundaryConditions();
 	} catch(...) {
 		throw std::invalid_argument("Unable to read boundary conditions from JSON file. Missing boundary field or wrong format?");
-		return;
 	}
 
 	if (conditions.find("recession") != conditions.end()) {
