@@ -89,13 +89,28 @@ void readMesh(std::string &filepath) {
 	}
 
 	try {
-		recession = conditions["recession"].get<vector<double>>();
-		if (recession.size() == 0)
-			recession = vector<double>(mesh.nodes.size(), 1);
+		try {
+			auto recessionCondition = conditions["recession"].get<vector<double>>();
+			if (recessionCondition.size() == 0)
+				recession = vector<double>(mesh.nodes.size(), 1);
+			else
+				recession = recessionCondition;
+			recessionAnisotropic.clear();
+			recessionMatrix.clear();
+			anisotropic = false;
+		} catch(...) {
+			auto recessionCondition = conditions["recession"].get<vector<array<double, 6>>>();
+			recession = vector<double>(mesh.nodes.size());
+			recessionAnisotropic = recessionCondition;
+			anisotropic = true;
+		}
 	} catch(...) {
 		recession = vector<double>(mesh.nodes.size(), 1);
+		recessionAnisotropic.clear();
+		recessionMatrix.clear();
+		anisotropic = false;
+		throw std::invalid_argument("Unable to read recession conditions from JSON file. Defaulting to isotropic recession with value 1.");
 	}
-
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 	angleTotal = std::vector<double>(mesh.nodes.size());
 }
@@ -166,6 +181,31 @@ void updateBoundaries(string &filepath, bool &pretty) {
 		updatedBoundaries.push_back({{"tag", boundaryTag}, {"type", boundaryType}, {"value", boundaryValue}, {"description", boundaryDescription}});
 	}
 	jsonFile["conditions"]["boundary"] = updatedBoundaries;
+
+	ofstream file(filepath);
+	if (pretty)
+		file << setw(4) << jsonFile << endl;
+	else
+		file << jsonFile << endl;
+}
+
+void updateRecessions(std::string &filepath, bool &pretty) {
+	fstream originalFile(filepath);
+	json jsonFile;
+	try {
+		jsonFile = json::parse(originalFile);
+	} catch (...) {
+		throw std::invalid_argument("Unable to parse JSON file. Invalid JSON file?");
+		return;
+	}
+
+	json updatedRecessions;
+	if (anisotropic) {
+		updatedRecessions = recessionAnisotropic;
+	} else {
+		updatedRecessions = recession;
+	}
+	jsonFile["conditions"]["recession"] = updatedRecessions;
 
 	ofstream file(filepath);
 	if (pretty)

@@ -1,6 +1,7 @@
 import sys
 import json
 import meshio
+import numpy
 
 def print_help():
 	print('''
@@ -74,7 +75,14 @@ for field in mesh.field_data:
 	if condition[0] in ['inlet', 'outlet', 'symmetry', 'condition']:
 		boundaries.append(mesh.field_data[field][0])
 	elif condition[0] == 'recession':
-		recessions[mesh.field_data[field][0]] = float(condition[1])
+		if len(condition) == 1:
+			recessions[mesh.field_data[field][0]] = 1
+		if len(condition) == 2:
+			recessions[mesh.field_data[field][0]] = float(condition[1])
+		if len(condition) > 2:
+			recessions[mesh.field_data[field][0]] = [float(i) for i in condition[1:]]
+
+
 
 	condition_code = mesh.field_data[field][0].item()
 	match condition[0]:
@@ -123,6 +131,9 @@ if recessions != {}:
 print('Correcting indices')
 for entry in ['triangle', 'tetra']:
 	data[entry] = [[node + 1 for node in entry] for entry in data[entry]]
+
+# data['triangle'] = (numpy.array(data['triangle']) - 1).tolist()
+# data['tetra'] = (numpy.array(data['tetra']) - 1).tolist()
 
 meshOut = {
 	'metaData': {

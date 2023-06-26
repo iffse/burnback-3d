@@ -85,7 +85,6 @@ void computeGeometry() {
 			tetrahedraGeometry.vertexWeight[tetrahedra][vertex] = tetrahedraGeometry.solidAngle[tetrahedra][vertex] / angleTotal[node];
 		}
 	}
-	auto maxRecession = *max_element(recession.begin(), recession.end());
 	timeStep *= input.cfl / (6 * maxRecession);
 }
 }
@@ -213,6 +212,19 @@ void ApplyBoundaryConditions(){
 //}}}
 
 namespace Nodes {//{{{	
+double getMaxRecession() {
+	auto maxRecession = 0.0;
+	if (anisotropic) {
+		for (auto &recession : recessionAnisotropic) {
+			auto &recession1 = recession[0];
+			auto &recession2 = recession[1];
+			maxRecession = max(maxRecession, max(recession1, recession2));
+		}
+	} else {
+		maxRecession = *max_element(recession.begin(), recession.end());
+	}
+	return maxRecession;
+}
 void computeResults() {
 	for (uint node = 0; node < mesh.nodes.size(); ++node) {
 		auto &uVertex = computationData.uVertex[node];
@@ -281,3 +293,48 @@ void setBoundaryConditions() {
 }
 }
 //}}}
+
+namespace Anisotropic {//{{{
+void computeMatrix() {
+	recessionMatrix = vector<array<array<double, 3>, 3>>(mesh.nodes.size());
+	for (uint node = 0; node < mesh.nodes.size(); ++node) {
+		auto &recession = recessionAnisotropic[node];
+		auto &recession1 = recession[0];
+		auto &recession2 = recession[1];
+		auto &recession3 = recession[2];
+
+		auto rotationX = recession[3] * M_PI / 180;
+		auto rotationY = recession[4] * M_PI / 180;
+		auto rotationZ = recession[5] * M_PI / 180;
+
+		array<array<double, 3>, 3> rotationMatrix = {{
+			{cos(rotationY) * cos(rotationZ), sin(rotationX) * sin(rotationY) * cos(rotationZ) - cos(rotationX) * sin(rotationZ), cos(rotationX) * sin(rotationY) * cos(rotationZ) + sin(rotationX) * sin(rotationZ)},
+			{cos(rotationY) * sin(rotationZ), sin(rotationX) * sin(rotationY) * sin(rotationZ) + cos(rotationX) * cos(rotationZ), cos(rotationX) * sin(rotationY) * sin(rotationZ) - sin(rotationX) * cos(rotationZ)},
+			{- sin(rotationY), sin(rotationX) * cos(rotationY), cos(rotationX) * cos(rotationY)}
+		}};
+
+		array<array<double, 3>, 3> rec = {{
+			{recession1, 0, 0},
+			{0, recession2, 0},
+			{0, 0, recession3}
+		}};
+
+		auto rotationMatrixT = Matrix::transpose(rotationMatrix);
+
+		auto _op = Matrix::multiplication(rotationMatrixT, rec);
+		recessionMatrix[node] = Matrix::multiplication(_op, rotationMatrix);
+	}
+}
+void computeRecession() {
+		for (uint node = 0; node < mesh.nodes.size(); ++node) {
+		array<array<double, 1>, 3> flowDirection = {{
+			{computationData.gradient[node][0]},
+			{computationData.gradient[node][1]},
+			{computationData.gradient[node][2]}
+		}};
+		auto &matrix = recessionMatrix[node];
+		auto effectiveRecession = Matrix::multiplication(matrix, flowDirection);
+		recession[node] = sqrt(pow(effectiveRecession[0][0], 2) + pow(effectiveRecession[1][0], 2) + pow(effectiveRecession[2][0], 2));
+	}
+}
+}//}}}

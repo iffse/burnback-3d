@@ -157,7 +157,14 @@ void Actions::worker() {
 		tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 		angleTotal = vector<double>(mesh.nodes.size());
 		computationData = ComputationData(mesh.nodes.size(), mesh.tetrahedra.size());
+		emit newOutput("--> Getting max recession");
+		maxRecession = Nodes::getMaxRecession();
+		emit newOutput("--> Computing geometry");
 		Geometry::computeGeometry();
+		if (anisotropic) {
+			emit newOutput("--> Computing anisotropic matrix");
+			Anisotropic::computeMatrix();
+		}
 	}
 	emit newOutput("--> Starting subiteration loop");
 	if (currentIter < input.targetIter)
@@ -170,6 +177,8 @@ void Actions::worker() {
 	for (; currentIter < input.targetIter; ++currentIter) {
 		Tetrahedra::computeMeanGradient();
 		Tetrahedra::computeFluxes();
+		if (anisotropic)
+			Anisotropic::computeRecession();
 		Triangles::ApplyBoundaryConditions();
 		Nodes::computeResults();
 
@@ -391,8 +400,74 @@ void Actions::updateBoundaries(bool saveToFile, bool pretty) {
 	}
 }
 
+void Actions::updateRecessions(QString recessions, bool saveToFile, bool pretty) {
+	try {
+		if (recessions == "") {
+			recession = vector<double>(mesh.nodes.size(), 1);
+			anisotropic = false;
+			recessionAnisotropic.clear();
+			recessionMatrix.clear();
+			appendOutput("Recessions updated to 1");
+			return;
+		}
+		auto recessionsList = recessions.split("\n");
+		if (recessionsList[0].simplified().split(" ").size() == 3) {
+			recessionAnisotropic = vector<array<double, 6>>(mesh.nodes.size());
+			anisotropic = true;
+			for (uint node = 0; node < mesh.nodes.size(); ++node) {
+				auto values = recessionsList[node].simplified().split(" ");
+				recessionAnisotropic[node][0] = values[0].toDouble();
+				recessionAnisotropic[node][1] = values[1].toDouble();
+				recessionAnisotropic[node][2] = values[2].toDouble();
+			}
+			appendOutput("Recessions updated to anisotropic");
+			return;
+		} else if (recessionsList[0].simplified().split(" ").size() == 1) {
+			recession = vector<double>(mesh.nodes.size());
+			anisotropic = false;
+			recessionAnisotropic.clear();
+			recessionMatrix.clear();
+			for (uint node = 0; node < mesh.nodes.size(); ++node) {
+				recession[node] = recessionsList[node].toDouble();
+			}
+			appendOutput("Recessions updated to isotropic");
+			return;
+		} else {
+			appendOutput("Error while updating recessions: wrong format");
+			return;
+		}
+	} catch (...) {
+		appendOutput("Error while updating recessions");
+	}
+
+	if (saveToFile){
+		auto filepath = root->findChild<QObject*>("fileDialog")->property("fileUrl").toString();
+		clearSubstring(filepath);
+
+		try {
+			string filepathString = filepath.toStdString();
+			Json::updateRecessions(filepathString, pretty);
+			appendOutput("Updated to " + filepath);
+		} catch (const std::exception &e) {
+			appendOutput("Error while updating boundaries: " + QString(e.what()));
+		} catch (...) {
+			appendOutput("Error while updating boundaries");
+		}
+	}
+}
+
+
 QString Actions::getRecession() {
 	QString output = "";
+	if (anisotropic) {
+		for (const auto &value: recessionAnisotropic) {
+			for (const auto &value2: value)
+				output +=  QString::number(value2) + " ";
+			output += "\n";
+		}
+		output.chop(1);
+		return output;
+	}
 	for (const auto &value: recession) {
 		output +=  QString::number(value) + "\n";
 	}

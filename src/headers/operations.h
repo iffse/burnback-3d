@@ -57,6 +57,32 @@ T multiplication(const T &a, const double &b) {
 }
 //}}}
 
+namespace Matrix {//{{{
+template <typename T, typename V>
+auto multiplication(const T &matrix1, const V &matrix2) {
+	auto matrix3 = matrix2;
+	auto dimension = matrix1.size();
+	for (uint i = 0; i < dimension; ++i) {
+		for (uint j = 0; j < dimension; ++j) {
+			matrix3[i][j] = 0;
+			for (uint k = 0; k < dimension; ++k)
+				matrix3[i][j] += matrix1[i][k] * matrix2[k][j];
+		}
+	}
+	return matrix3;
+}
+
+template <typename T>
+auto transpose(const T &matrix) {
+	auto matrixT = matrix;
+	for (uint i = 0; i < matrix.size(); ++i) {
+		for (uint j = 0; j < matrix[0].size(); ++j)
+			matrixT[i][j] = matrix[j][i];
+	}
+	return matrixT;
+}
+}//}}}
+
 namespace Geometry {
 void computeGeometry();
 }
@@ -71,7 +97,13 @@ void ApplyBoundaryConditions();
 }
 
 namespace Nodes {
+double getMaxRecession();
 void computeResults();
 void setBoundaryConditions();
 double getError();
+}
+
+namespace Anisotropic {
+void computeMatrix();
+void computeRecession();
 }

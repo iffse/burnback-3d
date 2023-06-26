@@ -39,3 +39,8 @@ inline uint drawCount = 0;
 inline std::vector<double> recession;
 inline std::array<std::vector<double>, 2> burningArea;
 inline std::vector<double> errorIter;
+
+inline bool anisotropic;
+inline std::vector<std::array<std::array<double, 3>, 3>> recessionMatrix;
+inline std::vector<std::array<double, 6>> recessionAnisotropic;
+inline double maxRecession;

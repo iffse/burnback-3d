@@ -21,7 +21,6 @@ signals:
 	void graphErrorIter(std::vector<uint> iteration, std::vector<double> error, uint xMax, double yMax);
 	void errorIterUpdate(std::vector<double> errors, uint maxIter, double maxError);
 
-
 public slots:
 	void readMesh(QString path);
 	void readMeshWorker(QString path);
@@ -42,5 +41,6 @@ public slots:
 	QString getRecession(QString filepath);
 	void drawBurningArea(uint areas);
 	void updateErrorIter();
+	void updateRecessions(QString recessions, bool saveToFile, bool pretty);
 };
 
