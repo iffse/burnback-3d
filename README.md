@@ -6,6 +6,12 @@ Built binaries for Windows and MacOS can be found at [releases](https://github.c
 
 Supports both light and dark theme. Should use accordingly to your system theme. If you want dark theme, and it isn't, add `QT_QUICK_CONTROLS_MATERIAL_THEME=Dark` to your environment variables.
 
+![burnback-3d interface](img/interface.png)
+
+The contour visualization is only for preview purposes. For a much more detailed visualization, try [ParaView](https://www.paraview.org/):
+
+![result visualization in paraview](img/paraview.png)
+
 ## Usage
 
 First, you will need a mesh in order to use the program for analysis. For instance, [Gmsh](https://gmsh.info/) is an open source meshing software that can generate 2D and 3D finite element mesh.
@@ -31,7 +37,7 @@ gmsh -3 mesh.geo
 python mesh_convert.py mesh.msh
 ```
 
-If you want to use the exported results to another format other than Json (for instance `.CGNS`, or `.dat` for TecPlot) you can use the [result_convert.py](./tools/result_convert.py) script. Usage is:
+If you want to use the exported results to another format other than Json (for instance `.CGNS`, or `.dat` for TecPlot/ParaView, etc.) you can use the [result_convert.py](./tools/result_convert.py) script. Usage is:
 ```shell
 python result_convert.py result.json output.extension
 ```
