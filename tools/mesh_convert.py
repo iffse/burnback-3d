@@ -132,9 +132,6 @@ print('Correcting indices')
 for entry in ['triangle', 'tetra']:
 	data[entry] = [[node + 1 for node in entry] for entry in data[entry]]
 
-# data['triangle'] = (numpy.array(data['triangle']) - 1).tolist()
-# data['tetra'] = (numpy.array(data['tetra']) - 1).tolist()
-
 meshOut = {
 	'metaData': {
 		'nodes': len(data['point']),

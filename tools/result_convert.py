@@ -40,14 +40,11 @@ results = data['burnbackResults']
 
 # correcting index
 print('Correcting index')
-tetra = mesh['tetrahedra']
-
-tetra = (numpy.array(tetra) - 1).tolist()
+tetra = [[node - 1 for node in tet] for tet in mesh['tetrahedra']]
 
 point = mesh['nodes']
 cells = [
-	# ("triangle", mesha['triangles']),
-	("tetra", mesh['tetrahedra']),
+	("tetra", tetra),
 ]
 point_data = {
 	"time": results['uVertex'],
