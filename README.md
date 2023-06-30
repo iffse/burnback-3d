@@ -1,6 +1,14 @@
 # Burnback-3d
 
-Analysis of 3D burn surfaces for solid propellant rockets using tetrahedra based Time Marching Method as an alternative of the Level Set Method.
+Analysis of 3D burn surfaces for solid propellant rockets using tetrahedra based Time Marching Method as an alternative of the Level Set Method. Key features:
+
+- Combustion time computation with tetrahedra meshes for solid propellant rockets
+- Supports per node configuration of the recession speed
+- Supports isotropic and anisotropic propellants
+- Graphical interface to evaluate the results
+- Import and export data of any mesh formats with a python script
+
+If you only need a 2D analysis, see [burnback-qt](https://codeberg.org/iff/burnback-qt).
 
 Built binaries for Windows and MacOS can be found at [releases](https://github.com/iffse/burnback-3d/releases). For Linux is advisable to compile from source as Qt has no compatibility across different distributions (binaries built with Ubuntu CI didn't work on my Arch Linux). It is also possible to run the Windows binary through Wine, with minor flickers.
 
@@ -53,6 +61,8 @@ Qt modules dependencies:
 - qt-charts
 - qt-declaratives
 - qt-quickcontrols2
+
+WARNING: Do not compile with Qt 5.15.2. The 3D model importer is broken for that version.
 
 ### Using command line
 
