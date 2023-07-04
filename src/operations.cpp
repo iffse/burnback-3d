@@ -105,10 +105,12 @@ void computeMeanGradient() {
 		const auto &vertexACoord = mesh.nodes[nodeA];
 		const auto &vertexBCoord = mesh.nodes[nodeB];
 		const auto &vertexCCoord = mesh.nodes[nodeC];
-		auto coordinates = array<array<double, 3>, 4>{{{vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
-		                                               {vertexACoord[0], vertexACoord[1], vertexACoord[2]},
-		                                               {vertexBCoord[0], vertexBCoord[1], vertexBCoord[2]},
-		                                               {vertexCCoord[0], vertexCCoord[1], vertexCCoord[2]}}};
+		auto coordinates = array<array<double, 3>, 4>{{
+		    {vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
+		    {vertexACoord[0], vertexACoord[1], vertexACoord[2]},
+		    {vertexBCoord[0], vertexBCoord[1], vertexBCoord[2]},
+		    {vertexCCoord[0], vertexCCoord[1], vertexCCoord[2]},
+		}};
 
 		auto &gradient = computationData.gradient[tetrahedra];
 		for (int index = 0; index < 3; ++index) {
@@ -302,13 +304,19 @@ void computeMatrix() {
 		auto rotationY = recession[4] * M_PI / 180;
 		auto rotationZ = recession[5] * M_PI / 180;
 
-		array<array<double, 3>, 3> rotationMatrix = {{{cos(rotationY) * cos(rotationZ), sin(rotationX) * sin(rotationY) * cos(rotationZ) - cos(rotationX) * sin(rotationZ), cos(rotationX) * sin(rotationY) * cos(rotationZ) + sin(rotationX) * sin(rotationZ)},
-		                                              {cos(rotationY) * sin(rotationZ), sin(rotationX) * sin(rotationY) * sin(rotationZ) + cos(rotationX) * cos(rotationZ), cos(rotationX) * sin(rotationY) * sin(rotationZ) - sin(rotationX) * cos(rotationZ)},
-		                                              {-sin(rotationY), sin(rotationX) * cos(rotationY), cos(rotationX) * cos(rotationY)}}};
+		array<array<double, 3>, 3> rotationMatrix = {{
+		    {cos(rotationY) * cos(rotationZ), sin(rotationX) * sin(rotationY) * cos(rotationZ) - cos(rotationX) * sin(rotationZ), cos(rotationX) * sin(rotationY) * cos(rotationZ) + sin(rotationX) * sin(rotationZ)},
+		    {cos(rotationY) * sin(rotationZ), sin(rotationX) * sin(rotationY) * sin(rotationZ) + cos(rotationX) * cos(rotationZ), cos(rotationX) * sin(rotationY) * sin(rotationZ) - sin(rotationX) * cos(rotationZ)},
+		    {-sin(rotationY), sin(rotationX) * cos(rotationY), cos(rotationX) * cos(rotationY)},
+		}};
 
-		array<array<double, 3>, 3> rec = {{{recession1, 0, 0},
-		                                   {0, recession2, 0},
-		                                   {0, 0, recession3}}};
+		array<array<double, 3>, 3> rec = {
+		    {
+			{recession1, 0, 0},
+			{0, recession2, 0},
+			{0, 0, recession3},
+		    },
+		};
 
 		auto rotationMatrixT = Matrix::transpose(rotationMatrix);
 
@@ -318,9 +326,11 @@ void computeMatrix() {
 }
 void computeRecession() {
 	for (uint node = 0; node < mesh.nodes.size(); ++node) {
-		array<array<double, 1>, 3> flowDirection = {{{computationData.gradient[node][0]},
-		                                             {computationData.gradient[node][1]},
-		                                             {computationData.gradient[node][2]}}};
+		array<array<double, 1>, 3> flowDirection = {{
+		    {computationData.gradient[node][0]},
+		    {computationData.gradient[node][1]},
+		    {computationData.gradient[node][2]},
+		}};
 		auto &matrix = recessionMatrix[node];
 		auto effectiveRecession = Matrix::multiplication(matrix, flowDirection);
 		recession[node] = sqrt(pow(effectiveRecession[0][0], 2) + pow(effectiveRecession[1][0], 2) + pow(effectiveRecession[2][0], 2));

@@ -1,3 +1,8 @@
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+BinPackArguments: false
+BinPackParameters: false
 FixNamespaceComments: false
 IndentCaseLabels: true
 ColumnLimit: 0
