@@ -3,7 +3,7 @@
 #include <math.h>
 #include <src/headers/types.h>
 
-namespace Vectors {//{{{
+namespace Vectors { //{{{
 template <typename T>
 T crossProduct(const T &a, const T &b) {
 	T result;
@@ -57,7 +57,7 @@ T multiplication(const T &a, const double &b) {
 }
 //}}}
 
-namespace Matrix {//{{{
+namespace Matrix { //{{{
 template <typename T, typename V>
 auto multiplication(const T &matrix1, const V &matrix2) {
 	auto matrix = matrix1;
@@ -80,7 +80,7 @@ auto transpose(const T &matrix) {
 	}
 	return matrixT;
 }
-}//}}}
+} //}}}
 
 namespace Geometry {
 void computeGeometry();

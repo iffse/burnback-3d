@@ -1,0 +1,6 @@
+FixNamespaceComments: false
+IndentCaseLabels: true
+ColumnLimit: 0
+UseTab: AlignWithSpaces
+TabWidth: 8
+IndentWidth: 8

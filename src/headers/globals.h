@@ -3,9 +3,9 @@
 #include <QQmlApplicationEngine>
 #include <QString>
 #include <array>
-#include <vector>
-#include <src/headers/types.h>
 #include <map>
+#include <src/headers/types.h>
+#include <vector>
 
 enum {
 	NO_CONDITION = 0,
@@ -15,7 +15,7 @@ enum {
 	OUTLET_SYMMETRY = 23
 };
 
-inline QObject* root;
+inline QObject *root;
 inline QString tmpDir;
 
 inline Input input;

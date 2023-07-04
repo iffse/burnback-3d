@@ -2,9 +2,9 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <cmath>
-#include <src/headers/plotData.h>
 #include <src/headers/globals.h>
 #include <src/headers/operations.h>
+#include <src/headers/plotData.h>
 
 using namespace std;
 using namespace Vectors;
@@ -17,7 +17,6 @@ double lerp(double x1, double x2, double t) {
 	return x1 + t * (x2 - x1);
 }
 #endif
-
 
 IsocontourData isosurfaceData(double value) {
 	IsocontourData data;
@@ -86,7 +85,7 @@ IsocontourData isosurfaceData(double value) {
 					auto y = lerp(uy1, uy2, t);
 					auto z = lerp(uz1, uz2, t);
 
-					intersectionPoints.push_back({ x, y, z });
+					intersectionPoints.push_back({x, y, z});
 				}
 			}
 		}
@@ -112,9 +111,8 @@ IsocontourData isosurfaceData(double value) {
 					triangleNodes[i] = nodeIndex;
 				}
 				auto normal = crossProduct(
-					subtraction(data.nodes[triangleNodes[1]], data.nodes[triangleNodes[0]]),
-					subtraction(data.nodes[triangleNodes[2]], data.nodes[triangleNodes[0]])
-				);
+				    subtraction(data.nodes[triangleNodes[1]], data.nodes[triangleNodes[0]]),
+				    subtraction(data.nodes[triangleNodes[2]], data.nodes[triangleNodes[0]]));
 				auto flowDirection = computationData.gradient[tetrahedra];
 				if (scalarProduct(normal, flowDirection) > 0) {
 					swap(triangleNodes[1], triangleNodes[2]);
@@ -125,11 +123,11 @@ IsocontourData isosurfaceData(double value) {
 			case 4: {
 				// order intersection points
 				array<uint, 4> orderedPoints;
-				//center point
+				// center point
 				auto center = multiplication((summation(
-					summation(intersectionPoints[0], intersectionPoints[1]),
-					summation(intersectionPoints[2], intersectionPoints[3]))
-				) , 0.25);
+								 summation(intersectionPoints[0], intersectionPoints[1]),
+								 summation(intersectionPoints[2], intersectionPoints[3]))),
+				                             0.25);
 				// sort by angle
 				auto OA = subtraction(intersectionPoints[0], center);
 				auto normal = crossProduct(OA, subtraction(intersectionPoints[1], center));
@@ -142,7 +140,7 @@ IsocontourData isosurfaceData(double value) {
 					auto xab = crossProduct(OA, OB);
 					auto angleArg = ab / (mOA * mOB);
 					if (abs(angleArg) > 1)
-						angleArg =  angleArg / abs(angleArg);
+						angleArg = angleArg / abs(angleArg);
 					auto _angle = acos(angleArg);
 					if (scalarProduct(normal, xab) < 0)
 						_angle = 2 * M_PI - _angle;
@@ -203,17 +201,15 @@ IsocontourData isosurfaceData(double value) {
 				}
 				auto flowDirection = computationData.gradient[tetrahedra];
 				auto normal1 = crossProduct(
-					subtraction(data.nodes[triangleNodes1[1]], data.nodes[triangleNodes1[0]]),
-					subtraction(data.nodes[triangleNodes1[2]], data.nodes[triangleNodes1[0]])
-				);
+				    subtraction(data.nodes[triangleNodes1[1]], data.nodes[triangleNodes1[0]]),
+				    subtraction(data.nodes[triangleNodes1[2]], data.nodes[triangleNodes1[0]]));
 				if (scalarProduct(normal1, flowDirection) > 0) {
 					swap(triangleNodes1[1], triangleNodes1[2]);
 				}
 
 				auto normal2 = crossProduct(
-					subtraction(data.nodes[triangleNodes2[1]], data.nodes[triangleNodes2[0]]),
-					subtraction(data.nodes[triangleNodes2[2]], data.nodes[triangleNodes2[0]])
-				);
+				    subtraction(data.nodes[triangleNodes2[1]], data.nodes[triangleNodes2[0]]),
+				    subtraction(data.nodes[triangleNodes2[2]], data.nodes[triangleNodes2[0]]));
 				if (scalarProduct(normal2, flowDirection) > 0) {
 					swap(triangleNodes2[1], triangleNodes2[2]);
 				}
@@ -228,7 +224,6 @@ IsocontourData isosurfaceData(double value) {
 	}
 	return data;
 }
-
 
 array<vector<double>, 2> burnAreaData(uint numberOfAreas) {
 	array<vector<double>, 2> data;

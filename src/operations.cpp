@@ -2,16 +2,15 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <cmath>
-#include <src/headers/operations.h>
 #include <src/headers/globals.h>
+#include <src/headers/operations.h>
 
 #include <iostream>
-
 
 using namespace std;
 using namespace Vectors;
 
-namespace Geometry {//{{{
+namespace Geometry { //{{{
 void computeGeometry() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		auto &solidAngle = tetrahedraGeometry.solidAngle[tetrahedra];
@@ -50,7 +49,7 @@ void computeGeometry() {
 			// if (solidAngle[vertex] < 0)
 			// 	solidAngle[vertex] *= -1;
 			angleTotal[nodeO] += solidAngle[vertex];
-				// solidAngle[vertex] += 2 * M_PI;
+			// solidAngle[vertex] += 2 * M_PI;
 
 			// Calculating area and normal vector of the intersection with a unit sphere
 			const auto uOA = normalization(OA);
@@ -90,7 +89,7 @@ void computeGeometry() {
 }
 //}}}
 
-namespace Tetrahedra {//{{{
+namespace Tetrahedra { //{{{
 void computeMeanGradient() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto nodeO = mesh.tetrahedra[tetrahedra][0] - 1;
@@ -98,21 +97,18 @@ void computeMeanGradient() {
 		const auto nodeB = mesh.tetrahedra[tetrahedra][2] - 1;
 		const auto nodeC = mesh.tetrahedra[tetrahedra][3] - 1;
 		const auto uOABC = array<double, 4>{
-			computationData.uVertex[nodeO],
-			computationData.uVertex[nodeA],
-			computationData.uVertex[nodeB],
-			computationData.uVertex[nodeC]
-		};
+		    computationData.uVertex[nodeO],
+		    computationData.uVertex[nodeA],
+		    computationData.uVertex[nodeB],
+		    computationData.uVertex[nodeC]};
 		const auto &vertexOCoord = mesh.nodes[nodeO];
 		const auto &vertexACoord = mesh.nodes[nodeA];
 		const auto &vertexBCoord = mesh.nodes[nodeB];
 		const auto &vertexCCoord = mesh.nodes[nodeC];
-		auto coordinates = array<array<double, 3>, 4>{{
-			{vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
-			{vertexACoord[0], vertexACoord[1], vertexACoord[2]},
-			{vertexBCoord[0], vertexBCoord[1], vertexBCoord[2]},
-			{vertexCCoord[0], vertexCCoord[1], vertexCCoord[2]}
-		}};
+		auto coordinates = array<array<double, 3>, 4>{{{vertexOCoord[0], vertexOCoord[1], vertexOCoord[2]},
+		                                               {vertexACoord[0], vertexACoord[1], vertexACoord[2]},
+		                                               {vertexBCoord[0], vertexBCoord[1], vertexBCoord[2]},
+		                                               {vertexCCoord[0], vertexCCoord[1], vertexCCoord[2]}}};
 
 		auto &gradient = computationData.gradient[tetrahedra];
 		for (int index = 0; index < 3; ++index) {
@@ -144,7 +140,7 @@ void computeFluxes() {
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
 		uint vertexIndex = 0;
-		for (auto &_node: mesh.tetrahedra[tetrahedra]) {
+		for (auto &_node : mesh.tetrahedra[tetrahedra]) {
 			const auto node = _node - 1;
 			auto &vertexGradient = computationData.vertexGradient[node];
 			const auto &boundaryType = boundaryConditions[node];
@@ -175,10 +171,10 @@ void computeFluxes() {
 }
 //}}}
 
-namespace Triangles {//{{{
-void ApplyBoundaryConditions(){
+namespace Triangles { //{{{
+void ApplyBoundaryConditions() {
 	uint nodeIndex = 0;
-	for (auto &type: boundaryConditions) {
+	for (auto &type : boundaryConditions) {
 		auto &fluxHamiltonian = computationData.flux[0][nodeIndex];
 		auto &fluxDiffusive = computationData.flux[1][nodeIndex];
 		auto hamiltonArg = computationData.vertexGradient[nodeIndex];
@@ -211,7 +207,7 @@ void ApplyBoundaryConditions(){
 }
 //}}}
 
-namespace Nodes {//{{{	
+namespace Nodes { //{{{
 double getMaxRecession() {
 	auto maxRecession = 0.0;
 	if (anisotropic) {
@@ -249,7 +245,7 @@ void setBoundaryConditions() {
 	for (uint node = 0; node < nodeConditions.size(); ++node) {
 		auto &conditions = nodeConditions[node];
 		auto &current = boundaryConditions[node];
-		for (auto &condition: conditions) {
+		for (auto &condition : conditions) {
 			if (current == INLET)
 				break;
 			auto &type = boundaries[condition].type;
@@ -271,10 +267,9 @@ void setBoundaryConditions() {
 					auto angleZ = boundaries[condition].value[0];
 					auto angleY = boundaries[condition].value[1];
 					array<double, 3> symmetryVector = {
-						cos(angleZ) * cos(angleY),
-						sin(angleZ) * cos(angleY),
-						- sin(angleY)
-					};
+					    cos(angleZ) * cos(angleY),
+					    sin(angleZ) * cos(angleY),
+					    -sin(angleY)};
 
 					if (symmetryConditions.find(node) == symmetryConditions.end()) {
 						symmetryConditions.insert(pair<uint, vector<array<double, 3>>>(node, {symmetryVector}));
@@ -294,7 +289,7 @@ void setBoundaryConditions() {
 }
 //}}}
 
-namespace Anisotropic {//{{{
+namespace Anisotropic { //{{{
 void computeMatrix() {
 	recessionMatrix = vector<array<array<double, 3>, 3>>(mesh.nodes.size());
 	for (uint node = 0; node < mesh.nodes.size(); ++node) {
@@ -307,17 +302,13 @@ void computeMatrix() {
 		auto rotationY = recession[4] * M_PI / 180;
 		auto rotationZ = recession[5] * M_PI / 180;
 
-		array<array<double, 3>, 3> rotationMatrix = {{
-			{cos(rotationY) * cos(rotationZ), sin(rotationX) * sin(rotationY) * cos(rotationZ) - cos(rotationX) * sin(rotationZ), cos(rotationX) * sin(rotationY) * cos(rotationZ) + sin(rotationX) * sin(rotationZ)},
-			{cos(rotationY) * sin(rotationZ), sin(rotationX) * sin(rotationY) * sin(rotationZ) + cos(rotationX) * cos(rotationZ), cos(rotationX) * sin(rotationY) * sin(rotationZ) - sin(rotationX) * cos(rotationZ)},
-			{- sin(rotationY), sin(rotationX) * cos(rotationY), cos(rotationX) * cos(rotationY)}
-		}};
+		array<array<double, 3>, 3> rotationMatrix = {{{cos(rotationY) * cos(rotationZ), sin(rotationX) * sin(rotationY) * cos(rotationZ) - cos(rotationX) * sin(rotationZ), cos(rotationX) * sin(rotationY) * cos(rotationZ) + sin(rotationX) * sin(rotationZ)},
+		                                              {cos(rotationY) * sin(rotationZ), sin(rotationX) * sin(rotationY) * sin(rotationZ) + cos(rotationX) * cos(rotationZ), cos(rotationX) * sin(rotationY) * sin(rotationZ) - sin(rotationX) * cos(rotationZ)},
+		                                              {-sin(rotationY), sin(rotationX) * cos(rotationY), cos(rotationX) * cos(rotationY)}}};
 
-		array<array<double, 3>, 3> rec = {{
-			{recession1, 0, 0},
-			{0, recession2, 0},
-			{0, 0, recession3}
-		}};
+		array<array<double, 3>, 3> rec = {{{recession1, 0, 0},
+		                                   {0, recession2, 0},
+		                                   {0, 0, recession3}}};
 
 		auto rotationMatrixT = Matrix::transpose(rotationMatrix);
 
@@ -326,15 +317,13 @@ void computeMatrix() {
 	}
 }
 void computeRecession() {
-		for (uint node = 0; node < mesh.nodes.size(); ++node) {
-		array<array<double, 1>, 3> flowDirection = {{
-			{computationData.gradient[node][0]},
-			{computationData.gradient[node][1]},
-			{computationData.gradient[node][2]}
-		}};
+	for (uint node = 0; node < mesh.nodes.size(); ++node) {
+		array<array<double, 1>, 3> flowDirection = {{{computationData.gradient[node][0]},
+		                                             {computationData.gradient[node][1]},
+		                                             {computationData.gradient[node][2]}}};
 		auto &matrix = recessionMatrix[node];
 		auto effectiveRecession = Matrix::multiplication(matrix, flowDirection);
 		recession[node] = sqrt(pow(effectiveRecession[0][0], 2) + pow(effectiveRecession[1][0], 2) + pow(effectiveRecession[2][0], 2));
 	}
 }
-}//}}}
+} //}}}

@@ -55,3 +55,6 @@ sanitizer: ./src ./src-qml ./.qmake-saint-debug
 
 clean:
 	$(REMOVE_COMMAND) ./.qmake-debug ./.qmake-release ./target/ ./..qmake.stash ./.cache
+
+format:
+	clang-format -style=file -i ./src/*.cpp ./src/headers/*.h

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <QString>
 #include <QObject>
+#include <QString>
 #include <QVariant>
 
-class Actions: public QObject {
+class Actions : public QObject {
 	Q_OBJECT
-public:
+	public:
 	explicit Actions(QObject *parent = nullptr);
 
-signals:
+	signals:
 	void newOutput(QString output);
 	void updateProgress(uint progress, uint total);
 	void finished();
@@ -43,4 +43,3 @@ public slots:
 	void updateErrorIter();
 	void updateRecessions(QString recessions, bool saveToFile, bool pretty);
 };
-

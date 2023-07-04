@@ -1,9 +1,9 @@
 #pragma once
 
 #include <array>
-#include <vector>
 #include <map>
 #include <string>
+#include <vector>
 
 // this is not required in linux
 // for some reason, the compiler in windows and mac does not recognize uint
@@ -30,14 +30,13 @@ struct TetrahedraGeometry {
 	std::vector<std::array<std::array<double, 3>, 4>> normal;
 	std::vector<double> jacobiDeterminant; // equal to 6 times the volume (signed) of the tetrahedra
 
-TetrahedraGeometry() = default;
-TetrahedraGeometry(uint tetrahedra) {
-	solidAngle = triangleArea = vertexWeight = std::vector<std::array<double, 4>>(tetrahedra);
-	normal = std::vector<std::array<std::array<double, 3>, 4>>(tetrahedra);
-	jacobiDeterminant = std::vector<double>(tetrahedra);
+	TetrahedraGeometry() = default;
+	TetrahedraGeometry(uint tetrahedra) {
+		solidAngle = triangleArea = vertexWeight = std::vector<std::array<double, 4>>(tetrahedra);
+		normal = std::vector<std::array<std::array<double, 3>, 4>>(tetrahedra);
+		jacobiDeterminant = std::vector<double>(tetrahedra);
 	}
 };
-
 
 struct Boundary {
 	uint type;

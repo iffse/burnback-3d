@@ -2,31 +2,31 @@
 #define _USE_MATH_DEFINES
 #endif
 
-#include <src/headers/iosystem.h>
 #include <src/headers/globals.h>
-#include <src/headers/plotData.h>
+#include <src/headers/iosystem.h>
 #include <src/headers/operations.h>
+#include <src/headers/plotData.h>
 // #include <src/headers/interface.h>
 
-#include <nlohmann/json.hpp>
 #include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace std;
 using json = nlohmann::json;
 
-void readInput() {//{{{
-	input.uInitial = root->findChild<QObject*>("initialCondition")->property("text").toDouble();
-	input.resume = root->findChild<QObject*>("resume")->property("checked").toBool();
-	input.cfl = root->findChild<QObject*>("cfl")->property("text").toDouble();
-	input.targetIter = root->findChild<QObject*>("targetIter")->property("text").toInt();
+void readInput() { //{{{
+	input.uInitial = root->findChild<QObject *>("initialCondition")->property("text").toDouble();
+	input.resume = root->findChild<QObject *>("resume")->property("checked").toBool();
+	input.cfl = root->findChild<QObject *>("cfl")->property("text").toDouble();
+	input.targetIter = root->findChild<QObject *>("targetIter")->property("text").toInt();
 	if (input.targetIter == 0)
 		input.targetIter = 300;
 
-	input.diffusiveWeight = root->findChild<QObject*>("diffusiveWeight")->property("text").toDouble();
+	input.diffusiveWeight = root->findChild<QObject *>("diffusiveWeight")->property("text").toDouble();
 }
 //}}}
 
-namespace Json {//{{{
+namespace Json { //{{{
 void readMesh(std::string &filepath) {
 	fstream file(filepath);
 	json json;
@@ -59,7 +59,7 @@ void readMesh(std::string &filepath) {
 			auto &tag = boundary["tag"];
 			if (tag < 1)
 				throw std::invalid_argument("Boundary tag must be greater than 0");
-			string type = boundary.value("type", "inlet") ;
+			string type = boundary.value("type", "inlet");
 			array<double, 2> value = boundary.value("value", std::array<double, 2>({0, 0}));
 			string description = boundary.value("description", "");
 
@@ -74,9 +74,9 @@ void readMesh(std::string &filepath) {
 		boundaries.insert(pair<int, Boundary>(0, Boundary{0, {0, 0}, ""}));
 		boundaryConditions = vector<uint>(mesh.nodes.size());
 		uint triangleIndex = 0;
-		for (auto &condition: conditions["triangle"]) {
+		for (auto &condition : conditions["triangle"]) {
 			auto &triangle = mesh.triangles[triangleIndex];
-			for (auto &_node: triangle) {
+			for (auto &_node : triangle) {
 				auto node = _node - 1;
 				// check if condition already exists
 				if (find(nodeConditions[node].begin(), nodeConditions[node].end(), condition) != nodeConditions[node].end())
@@ -86,7 +86,7 @@ void readMesh(std::string &filepath) {
 			triangleIndex++;
 		}
 		Nodes::setBoundaryConditions();
-	} catch(...) {
+	} catch (...) {
 		throw std::invalid_argument("Unable to read boundary conditions from JSON file. Missing boundary field or wrong format?");
 	}
 
@@ -101,13 +101,13 @@ void readMesh(std::string &filepath) {
 				recessionAnisotropic.clear();
 				recessionMatrix.clear();
 				anisotropic = false;
-			} catch(...) {
+			} catch (...) {
 				auto recessionCondition = conditions["recession"].get<vector<array<double, 6>>>();
 				recession = vector<double>(mesh.nodes.size());
 				recessionAnisotropic = recessionCondition;
 				anisotropic = true;
 			}
-		} catch(...) {
+		} catch (...) {
 			throw std::invalid_argument("Unable to read recession conditions from JSON file. Wrong format?");
 		}
 	} else {
@@ -120,7 +120,7 @@ void readMesh(std::string &filepath) {
 	tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 	angleTotal = std::vector<double>(mesh.nodes.size());
 }
-void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
+void writeData(std::string &filepath, std::string &origin, bool &pretty) {
 	fstream originalFile(origin);
 	json results;
 
@@ -139,7 +139,7 @@ void writeData(std::string  &filepath, std::string  &origin, bool &pretty) {
 		if (pretty)
 			file << setw(4) << jsonFile << endl;
 		else
-		file << jsonFile << endl;
+			file << jsonFile << endl;
 	} catch (...) {
 		ofstream file(filepath);
 		json jsonFile;
@@ -220,7 +220,7 @@ void updateRecessions(std::string &filepath, bool &pretty) {
 		file << jsonFile << endl;
 }
 
-}//}}}
+} //}}}
 
 namespace WriteMesh {
 // writes a mesh
@@ -231,15 +231,16 @@ void IsocontourSurface(double value, std::string filepath) {
 	file << "mtllib mesh.mtl" << endl;
 	file << "usemtl opaque" << endl;
 	// write vertices
-	for (auto &node: data.nodes) {
+	for (auto &node : data.nodes) {
 		file << "v";
-		for (auto &coord: node)
+		for (auto &coord : node)
 			file << " " << coord;
 		file << endl;
 	}
 	// write faces
-	for (auto &triangle: data.triangles) {
-		file << "f" << " " << triangle[0] + 1 << " " << triangle[2] + 1 << " " << triangle[1] + 1 << endl;
+	for (auto &triangle : data.triangles) {
+		file << "f"
+		     << " " << triangle[0] + 1 << " " << triangle[2] + 1 << " " << triangle[1] + 1 << endl;
 		// for (auto &node: triangle)
 		// 	file << " " << node + 1;
 		// file << endl;
@@ -307,9 +308,8 @@ void Boundary() {
 		file << "v " << mesh.nodes[i][0] << " " << mesh.nodes[i][1] << " " << mesh.nodes[i][2] << endl;
 	}
 	// write faces
-	for (auto & triangle: mesh.triangles)
+	for (auto &triangle : mesh.triangles)
 		file << "f " << triangle[0] << " " << triangle[1] << " " << triangle[2] << endl;
-
 }
 
 }

@@ -2,17 +2,17 @@
 #define _USE_MATH_DEFINES
 #endif
 
+#include <QDir>
+#include <QFile>
+#include <QStandardPaths>
 #include <chrono>
 #include <cmath>
 #include <thread>
-#include <QFile>
 #include <vector>
-#include <QDir>
-#include <QStandardPaths>
 
-#include <src/headers/interface.h>
 #include "src/headers/iosystem.h"
 #include <src/headers/globals.h>
+#include <src/headers/interface.h>
 #include <src/headers/operations.h>
 #include <src/headers/plotData.h>
 
@@ -40,7 +40,7 @@ void clearSubstring(QString &str) {
 }
 
 void Actions::appendOutput(QString text) {
-	QObject *output = root->findChild<QObject*>("output");
+	QObject *output = root->findChild<QObject *>("output");
 	auto currentText = output->property("text").toString();
 	auto setText = currentText + text + "\n";
 
@@ -54,11 +54,11 @@ void Actions::appendOutput(QString text) {
 
 	auto indexRemove = 0;
 	if (lines > 2 * maxLines) {
-		for (int line = 0; line < maxLines; ++ line) {
+		for (int line = 0; line < maxLines; ++line) {
 			indexRemove = setText.lastIndexOf("\n", indexRemove - 2);
 		}
 	} else {
-		for (int line = 0; line < lines - maxLines; ++ line) {
+		for (int line = 0; line < lines - maxLines; ++line) {
 			indexRemove = setText.indexOf("\n", indexRemove + 2);
 		}
 	}
@@ -93,9 +93,9 @@ void Actions::readMeshWorker(QString path) {
 
 void Actions::readMesh(QString filepath) {
 	running = false;
-	root->findChild<QObject*>("runButton")->setProperty("enabled", false);
-	root->findChild<QObject*>("resume")->setProperty("enabled", false);
-	root->findChild<QObject*>("resume")->setProperty("checked", false);
+	root->findChild<QObject *>("runButton")->setProperty("enabled", false);
+	root->findChild<QObject *>("resume")->setProperty("enabled", false);
+	root->findChild<QObject *>("resume")->setProperty("checked", false);
 	appendOutput("--> Reading mesh");
 	if (filepath.isEmpty()) {
 		appendOutput("Error: No file selected");
@@ -108,35 +108,34 @@ void Actions::readMesh(QString filepath) {
 	thread.detach();
 }
 
-
 void Actions::afterReadMesh(bool sucess) {
 	if (!sucess) {
 		appendOutput("Error: Failed to read mesh");
 		return;
 	}
 
-	root->findChild<QObject*>("runButton")->setProperty("enabled", true);
+	root->findChild<QObject *>("runButton")->setProperty("enabled", true);
 	appendOutput("--> Mesh read sucessfully");
 }
 
 void Actions::run() {
 	running = true;
-	root->findChild<QObject*>("runButton")->setProperty("text", "Stop");
+	root->findChild<QObject *>("runButton")->setProperty("text", "Stop");
 	// clear data
 	appendOutput("--> Reading inputs");
 	try {
 		readInput();
 	} catch (std::invalid_argument &e) {
 		appendOutput("Error: " + QString(e.what()));
-		root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+		root->findChild<QObject *>("runButton")->setProperty("text", "Run");
 		return;
 	} catch (...) {
 		appendOutput("Error: Unknown exception");
-		root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+		root->findChild<QObject *>("runButton")->setProperty("text", "Run");
 		return;
 	}
 
-	root->findChild<QObject*>("resume")->setProperty("enabled", true);
+	root->findChild<QObject *>("resume")->setProperty("enabled", true);
 	std::thread thread(&Actions::worker, this);
 	thread.detach();
 }
@@ -146,9 +145,9 @@ void Actions::stop() {
 }
 
 void Actions::worker() {
-	#ifdef DEBUG
+#ifdef DEBUG
 	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-	#endif
+#endif
 	if (!input.resume) {
 		currentIter = 0;
 		timeTotal = 0;
@@ -182,7 +181,6 @@ void Actions::worker() {
 		Triangles::ApplyBoundaryConditions();
 		Nodes::computeResults();
 
-
 		auto error = Nodes::getError();
 		errorIter[currentIter] = error;
 
@@ -197,7 +195,7 @@ void Actions::worker() {
 			}
 			emit newOutput("Error: Divergence detected. Stopping. Try reducing the CFL.");
 			emit newOutput("--> Stopped");
-			root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+			root->findChild<QObject *>("runButton")->setProperty("text", "Run");
 			afterWorker();
 			return;
 		}
@@ -210,10 +208,10 @@ void Actions::worker() {
 			linesToPrint = "";
 			if (!running) {
 				emit newOutput("--> Stopped");
-				root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+				root->findChild<QObject *>("runButton")->setProperty("text", "Run");
 				afterWorker();
 				return;
-		}
+			}
 		}
 	}
 
@@ -227,15 +225,14 @@ void Actions::worker() {
 }
 
 void Actions::afterWorker() {
-	root->findChild<QObject*>("runButton")->setProperty("text", "Run");
+	root->findChild<QObject *>("runButton")->setProperty("text", "Run");
 	auto &max_uVertex = *std::max_element(computationData.uVertex.begin(), computationData.uVertex.end());
-	root->findChild<QObject*>("isosurfaceSlider")->setProperty("to", max_uVertex);
+	root->findChild<QObject *>("isosurfaceSlider")->setProperty("to", max_uVertex);
 
 	// make sure the directory exists
 	QDir dir(tmpDir);
 	if (!dir.exists())
 		dir.mkpath(tmpDir);
-
 
 	auto nodes = vector<double>(mesh.nodes.size());
 	for (uint i = 0; i < mesh.nodes.size(); ++i) {
@@ -245,14 +242,13 @@ void Actions::afterWorker() {
 	WriteMesh::Material();
 	WriteMesh::Boundary();
 	double minx = 0, miny = 0, minz = 0, maxx = 0, maxy = 0, maxz = 0;
-	for (auto &node: mesh.nodes) {
+	for (auto &node : mesh.nodes) {
 		minx = min(minx, node[0]);
 		miny = min(miny, node[1]);
 		minz = min(minz, node[2]);
 		maxx = max(maxx, node[0]);
 		maxy = max(maxy, node[1]);
 		maxz = max(maxz, node[2]);
-
 	}
 
 	auto x = (maxx - minx) * 1.5 + maxx;
@@ -261,7 +257,7 @@ void Actions::afterWorker() {
 
 	emit setCameraPosition(x, y, z);
 
-	double isosurfaceValue = root->findChild<QObject*>("isosurfaceSlider")->property("value").toDouble();
+	double isosurfaceValue = root->findChild<QObject *>("isosurfaceSlider")->property("value").toDouble();
 	previewIsosurface(isosurfaceValue);
 }
 
@@ -297,7 +293,7 @@ void Actions::setCullingMethod(uint method) {
 }
 
 void Actions::exportData(QString filepath, bool pretty) {
-	auto origin = root->findChild<QObject*>("fileDialog")->property("fileUrl").toString();
+	auto origin = root->findChild<QObject *>("fileDialog")->property("fileUrl").toString();
 
 	clearSubstring(filepath);
 	clearSubstring(origin);
@@ -324,13 +320,13 @@ vector<QString> Actions::getBoundaries() {
 	vector<QString> boundariesVector = vector<QString>(numBoundaries * 4);
 
 	auto index = 0;
-	for (const auto &[key, value]: boundaries) {
+	for (const auto &[key, value] : boundaries) {
 		if (key == 0)
 			continue;
 		boundariesVector[index] = QString::number(key);
 		boundariesVector[index + 1] = QString::number(value.type - 1);
 		try {
-			switch (value.type){
+			switch (value.type) {
 				case INLET:
 					boundariesVector[index + 2] = QString::number(value.value[0]);
 					break;
@@ -338,8 +334,7 @@ vector<QString> Actions::getBoundaries() {
 					boundariesVector[index + 2] = "";
 					break;
 				case SYMMETRY:
-					boundariesVector[index + 2] = QString::number(value.value[0] * 180 / M_PI) + " "
-					+ QString::number(value.value[1] * 180 / M_PI) ;
+					boundariesVector[index + 2] = QString::number(value.value[0] * 180 / M_PI) + " " + QString::number(value.value[1] * 180 / M_PI);
 					break;
 			}
 		} catch (...) {
@@ -356,11 +351,11 @@ vector<QString> Actions::getBoundaries() {
 }
 
 void Actions::updateBoundaries(bool saveToFile, bool pretty) {
-	for (auto &[key, boundary]: boundaries) {
+	for (auto &[key, boundary] : boundaries) {
 		if (key == 0)
 			continue;
-		auto type = root->findChild<QObject*>("boundaryComboBox" + QString::number(key))->property("currentIndex").toInt() + 1;
-		auto value = root->findChild<QObject*>("boundaryValue" + QString::number(key))->property("text").toString();
+		auto type = root->findChild<QObject *>("boundaryComboBox" + QString::number(key))->property("currentIndex").toInt() + 1;
+		auto value = root->findChild<QObject *>("boundaryValue" + QString::number(key))->property("text").toString();
 		// split string
 		auto values = value.split(" ");
 		auto value1 = 0.0;
@@ -371,20 +366,19 @@ void Actions::updateBoundaries(bool saveToFile, bool pretty) {
 		} else {
 			value1 = values[0].toDouble();
 		}
-		auto description = root->findChild<QObject*>("boundaryDescription" + QString::number(key))->property("text").toString();
+		auto description = root->findChild<QObject *>("boundaryDescription" + QString::number(key))->property("text").toString();
 
-		boundaries[key] = Boundary {
-			uint(type),
-			std::array<double, 2>{value1, value2},
-			description.toStdString()
-		};
+		boundaries[key] = Boundary{
+		    uint(type),
+		    std::array<double, 2>{value1, value2},
+		    description.toStdString()};
 		Nodes::setBoundaryConditions();
 	}
 
 	appendOutput("Boundaries updated");
 
-	if (saveToFile){
-		auto filepath = root->findChild<QObject*>("fileDialog")->property("fileUrl").toString();
+	if (saveToFile) {
+		auto filepath = root->findChild<QObject *>("fileDialog")->property("fileUrl").toString();
 		clearSubstring(filepath);
 
 		auto filepathString = filepath.toStdString();
@@ -440,8 +434,8 @@ void Actions::updateRecessions(QString recessions, bool saveToFile, bool pretty)
 		appendOutput("Error while updating recessions");
 	}
 
-	if (saveToFile){
-		auto filepath = root->findChild<QObject*>("fileDialog")->property("fileUrl").toString();
+	if (saveToFile) {
+		auto filepath = root->findChild<QObject *>("fileDialog")->property("fileUrl").toString();
 		clearSubstring(filepath);
 
 		try {
@@ -456,20 +450,19 @@ void Actions::updateRecessions(QString recessions, bool saveToFile, bool pretty)
 	}
 }
 
-
 QString Actions::getRecession() {
 	QString output = "";
 	if (anisotropic) {
-		for (const auto &value: recessionAnisotropic) {
-			for (const auto &value2: value)
-				output +=  QString::number(value2) + " ";
+		for (const auto &value : recessionAnisotropic) {
+			for (const auto &value2 : value)
+				output += QString::number(value2) + " ";
 			output += "\n";
 		}
 		output.chop(1);
 		return output;
 	}
-	for (const auto &value: recession) {
-		output +=  QString::number(value) + "\n";
+	for (const auto &value : recession) {
+		output += QString::number(value) + "\n";
 	}
 	output.chop(1);
 	return output;
