@@ -1,3 +1,4 @@
+AlignAfterOpenBracket: BlockIndent
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowAllArgumentsOnNextLine: true
@@ -6,6 +7,6 @@ BinPackParameters: false
 FixNamespaceComments: false
 IndentCaseLabels: true
 ColumnLimit: 0
-UseTab: AlignWithSpaces
+UseTab: ForContinuationAndIndentation
 TabWidth: 8
 IndentWidth: 8

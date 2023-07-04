@@ -310,13 +310,11 @@ void computeMatrix() {
 		    {-sin(rotationY), sin(rotationX) * cos(rotationY), cos(rotationX) * cos(rotationY)},
 		}};
 
-		array<array<double, 3>, 3> rec = {
-		    {
-			{recession1, 0, 0},
-			{0, recession2, 0},
-			{0, 0, recession3},
-		    },
-		};
+		array<array<double, 3>, 3> rec = {{
+		    {recession1, 0, 0},
+		    {0, recession2, 0},
+		    {0, 0, recession3},
+		}};
 
 		auto rotationMatrixT = Matrix::transpose(rotationMatrix);
 

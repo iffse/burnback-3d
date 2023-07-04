@@ -112,7 +112,8 @@ IsocontourData isosurfaceData(double value) {
 				}
 				auto normal = crossProduct(
 				    subtraction(data.nodes[triangleNodes[1]], data.nodes[triangleNodes[0]]),
-				    subtraction(data.nodes[triangleNodes[2]], data.nodes[triangleNodes[0]]));
+				    subtraction(data.nodes[triangleNodes[2]], data.nodes[triangleNodes[0]])
+				);
 				auto flowDirection = computationData.gradient[tetrahedra];
 				if (scalarProduct(normal, flowDirection) > 0) {
 					swap(triangleNodes[1], triangleNodes[2]);
@@ -124,10 +125,9 @@ IsocontourData isosurfaceData(double value) {
 				// order intersection points
 				array<uint, 4> orderedPoints;
 				// center point
-				auto center = multiplication((summation(
-								 summation(intersectionPoints[0], intersectionPoints[1]),
-								 summation(intersectionPoints[2], intersectionPoints[3]))),
-				                             0.25);
+				auto sum1 = summation(intersectionPoints[0], intersectionPoints[1]);
+				auto sum2 = summation(intersectionPoints[2], intersectionPoints[3]);
+				auto center = multiplication(summation(sum1, sum2), 0.25);
 				// sort by angle
 				auto OA = subtraction(intersectionPoints[0], center);
 				auto normal = crossProduct(OA, subtraction(intersectionPoints[1], center));
@@ -202,14 +202,16 @@ IsocontourData isosurfaceData(double value) {
 				auto flowDirection = computationData.gradient[tetrahedra];
 				auto normal1 = crossProduct(
 				    subtraction(data.nodes[triangleNodes1[1]], data.nodes[triangleNodes1[0]]),
-				    subtraction(data.nodes[triangleNodes1[2]], data.nodes[triangleNodes1[0]]));
+				    subtraction(data.nodes[triangleNodes1[2]], data.nodes[triangleNodes1[0]])
+				);
 				if (scalarProduct(normal1, flowDirection) > 0) {
 					swap(triangleNodes1[1], triangleNodes1[2]);
 				}
 
 				auto normal2 = crossProduct(
 				    subtraction(data.nodes[triangleNodes2[1]], data.nodes[triangleNodes2[0]]),
-				    subtraction(data.nodes[triangleNodes2[2]], data.nodes[triangleNodes2[0]]));
+				    subtraction(data.nodes[triangleNodes2[2]], data.nodes[triangleNodes2[0]])
+				);
 				if (scalarProduct(normal2, flowDirection) > 0) {
 					swap(triangleNodes2[1], triangleNodes2[2]);
 				}
