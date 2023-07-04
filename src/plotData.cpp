@@ -125,9 +125,15 @@ IsocontourData isosurfaceData(double value) {
 				// order intersection points
 				array<uint, 4> orderedPoints;
 				// center point
-				auto sum1 = summation(intersectionPoints[0], intersectionPoints[1]);
-				auto sum2 = summation(intersectionPoints[2], intersectionPoints[3]);
-				auto center = multiplication(summation(sum1, sum2), 0.25);
+				// auto sum1 = summation(intersectionPoints[0], intersectionPoints[1]);
+				// auto sum2 = summation(intersectionPoints[2], intersectionPoints[3]);
+				auto sum = summation(
+				    intersectionPoints[0],
+				    intersectionPoints[1],
+				    intersectionPoints[2],
+				    intersectionPoints[3]
+				);
+				auto center = multiplication(sum, 0.25);
 				// sort by angle
 				auto OA = subtraction(intersectionPoints[0], center);
 				auto normal = crossProduct(OA, subtraction(intersectionPoints[1], center));

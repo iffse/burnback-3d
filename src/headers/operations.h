@@ -40,6 +40,13 @@ T summation(const T &a, const T &b) {
 		result[i] = a[i] + b[i];
 	return result;
 };
+
+template <typename T, typename... Args>
+T summation(const T &a, Args... args) {
+	T result;
+	result = summation(a, summation(args...));
+	return result;
+};
 template <typename T>
 T subtraction(const T &a, const T &b) {
 	T result;
