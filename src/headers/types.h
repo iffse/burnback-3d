@@ -40,7 +40,7 @@ struct TetrahedraGeometry {
 
 struct Boundary {
 	uint type;
-	std::array<double, 2> value;
+	std::array<double, 3> value;
 	std::string description;
 };
 

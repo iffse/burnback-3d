@@ -266,12 +266,7 @@ void setBoundaryConditions() {
 						current = OUTLET_SYMMETRY;
 					else
 						current = SYMMETRY;
-					auto angleZ = boundaries[condition].value[0];
-					auto angleY = boundaries[condition].value[1];
-					array<double, 3> symmetryVector = {
-					    cos(angleZ) * cos(angleY),
-					    sin(angleZ) * cos(angleY),
-					    -sin(angleY)};
+					auto symmetryVector = boundaries[condition].value;
 
 					if (symmetryConditions.find(node) == symmetryConditions.end()) {
 						symmetryConditions.insert(pair<uint, vector<array<double, 3>>>(node, {symmetryVector}));

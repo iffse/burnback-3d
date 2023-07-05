@@ -103,8 +103,7 @@ for field in mesh.field_data:
 			conditions['boundary'].append({
 				'tag': condition_code,
 				'type': 'symmetry',
-				'value': [float(condition[1]), float(condition[2])] if len(condition) > 2 else [0, 0],
-				'description': condition[3:] if len(condition) > 3 else ''
+				'description': condition[3:] if len(condition) > 1 else ''
 			})
 		case 'condition':
 			conditions['boundary'].append({

@@ -334,7 +334,7 @@ vector<QString> Actions::getBoundaries() {
 					boundariesVector[index + 2] = "";
 					break;
 				case SYMMETRY:
-					boundariesVector[index + 2] = QString::number(value.value[0] * 180 / M_PI) + " " + QString::number(value.value[1] * 180 / M_PI);
+					boundariesVector[index + 2] = QString::number(value.value[0]) + " " + QString::number(value.value[1]) + " " + QString::number(value.value[2]);
 					break;
 			}
 		} catch (...) {
@@ -358,19 +358,17 @@ void Actions::updateBoundaries(bool saveToFile, bool pretty) {
 		auto value = root->findChild<QObject *>("boundaryValue" + QString::number(key))->property("text").toString();
 		// split string
 		auto values = value.split(" ");
-		auto value1 = 0.0;
-		auto value2 = 0.0;
+		array<double, 3> valuesArray;
 		if (type == SYMMETRY) {
-			value1 = values[0].toDouble() * M_PI / 180;
-			value2 = values[1].toDouble() * M_PI / 180;
+			valuesArray = {values[0].toDouble(), values[1].toDouble(), values[2].toDouble()};
 		} else {
-			value1 = values[0].toDouble();
+			valuesArray = {values[0].toDouble(), 0.0, 0.0};
 		}
 		auto description = root->findChild<QObject *>("boundaryDescription" + QString::number(key))->property("text").toString();
 
 		boundaries[key] = Boundary{
 		    uint(type),
-		    std::array<double, 2>{value1, value2},
+		    valuesArray,
 		    description.toStdString()};
 		Nodes::setBoundaryConditions();
 	}

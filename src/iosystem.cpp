@@ -60,14 +60,14 @@ void readMesh(std::string &filepath) {
 			if (tag < 1)
 				throw std::invalid_argument("Boundary tag must be greater than 0");
 			string type = boundary.value("type", "inlet");
-			array<double, 2> value = boundary.value("value", std::array<double, 2>({0, 0}));
+			array<double, 3> value = std::array<double, 3>({0, 0, 0});
 			string description = boundary.value("description", "");
 
 			const vector<string> boundaryTypes = {"inlet", "outlet", "symmetry"};
-			if (type == "symmetry") {
-				value[0] *= M_PI / 180;
-				value[1] *= M_PI / 180;
-			}
+			// if (type == "symmetry") {
+			// 	value[0] *= M_PI / 180;
+			// 	value[1] *= M_PI / 180;
+			// }
 			uint typeInt = find(boundaryTypes.begin(), boundaryTypes.end(), type) - boundaryTypes.begin() + 1;
 			boundaries.insert(pair<int, Boundary>(tag, Boundary{typeInt, value, description}));
 		}
@@ -76,6 +76,18 @@ void readMesh(std::string &filepath) {
 		uint triangleIndex = 0;
 		for (auto &condition : conditions["triangle"]) {
 			auto &triangle = mesh.triangles[triangleIndex];
+			if (boundaries[condition].type == SYMMETRY &&
+			    boundaries[condition].value == array<double, 3>{0, 0, 0}) {
+				auto &node1 = mesh.nodes[triangle[0] - 1];
+				auto &node2 = mesh.nodes[triangle[1] - 1];
+				auto &node3 = mesh.nodes[triangle[2] - 1];
+
+				auto vector1 = Vectors::subtraction(node2, node1);
+				auto vector2 = Vectors::subtraction(node3, node1);
+				auto normal = Vectors::normalization(Vectors::crossProduct(vector2, vector1));
+
+				boundaries[condition].value = normal;
+			}
 			for (auto &_node : triangle) {
 				auto node = _node - 1;
 				// check if condition already exists
@@ -178,8 +190,6 @@ void updateBoundaries(string &filepath, bool &pretty) {
 				break;
 			case 3:
 				boundaryType = "symmetry";
-				boundaryValue[0] = boundaryValue[0] * 180 / M_PI;
-				boundaryValue[1] = boundaryValue[1] * 180 / M_PI;
 				break;
 		};
 
@@ -232,15 +242,13 @@ void IsocontourSurface(double value, std::string filepath) {
 	file << "usemtl opaque" << endl;
 	// write vertices
 	for (auto &node : data.nodes) {
-		file << "v";
-		for (auto &coord : node)
-			file << " " << coord;
-		file << endl;
+		file << "v"
+		     << " " << node[0] << " " << node[2] << " " << node[1] << endl;
 	}
 	// write faces
 	for (auto &triangle : data.triangles) {
 		file << "f"
-		     << " " << triangle[0] + 1 << " " << triangle[2] + 1 << " " << triangle[1] + 1 << endl;
+		     << " " << triangle[0] + 1 << " " << triangle[1] + 1 << " " << triangle[2] + 1 << endl;
 		// for (auto &node: triangle)
 		// 	file << " " << node + 1;
 		// file << endl;

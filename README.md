@@ -30,7 +30,7 @@ When using Gmsh and the script, you can define boundary conditions with physical
 
 - `inlet 0`: The boundary is an inlet, where the propellant starts to burn. The number after the condition is the initial condition applied in that boundary.
 - `outlet`: Used for boundaries where the combustion ends, like the shell of the container.
-- `symmetry 0 0`: Used to indicate that a boundary defines a symmetry. Numbers after the condition is the angle of the normal vector to the symmetry plane, initially has the direction of `x`. The vector is rotated first in the `z` direction, and later in the `y` direction.
+- `symmetry`: Used to indicate that a boundary defines a symmetry. The condition will automatically find the normal vector pointing outwards of the mesh if the boundary triangles are provided in a standard way (such as the output given by Gmsh). In other case, the vector is reversed and you should manually change its sign in the boundary conditions panel.
 - `condition`: Placeholder for conditions that should be changed later in Burnback GUI (will be treated as outlet by default).
 
 In volumes, you can define recession velocities:
