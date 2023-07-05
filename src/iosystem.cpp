@@ -59,9 +59,9 @@ void readMesh(std::string &filepath) {
 			auto &tag = boundary["tag"];
 			if (tag < 1)
 				throw std::invalid_argument("Boundary tag must be greater than 0");
-			string type = boundary.value("type", "inlet");
-			array<double, 3> value = std::array<double, 3>({0, 0, 0});
+			string type = boundary.value("type", "outlet");
 			string description = boundary.value("description", "");
+			array<double, 3> value = std::array<double, 3>({0, 0, 0});
 
 			const vector<string> boundaryTypes = {"inlet", "outlet", "symmetry"};
 			// if (type == "symmetry") {

@@ -28,7 +28,7 @@ Once you have the mesh, you will have to convert it into a Json file with tetrah
 
 When using Gmsh and the script, you can define boundary conditions with physical groups with the following naming conventions in surfaces:
 
-- `inlet 0`: The boundary is an inlet, where the propellant starts to burn. The number after the condition is the initial condition applied in that boundary.
+- `inlet`: The boundary is an inlet, where the propellant starts to burn. You can later give it a value as the boundary in boundary panels, if you want a boundary starts to be already burnt for the given time.
 - `outlet`: Used for boundaries where the combustion ends, like the shell of the container.
 - `symmetry`: Used to indicate that a boundary defines a symmetry. The condition will automatically find the normal vector pointing outwards of the mesh if the boundary triangles are provided in a standard way (such as the output given by Gmsh). In other case, the vector is reversed and you should manually change its sign in the boundary conditions panel.
 - `condition`: Placeholder for conditions that should be changed later in Burnback GUI (will be treated as outlet by default).

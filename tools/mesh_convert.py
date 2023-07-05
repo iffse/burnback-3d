@@ -90,8 +90,7 @@ for field in mesh.field_data:
 			conditions['boundary'].append({
 				'tag': condition_code,
 				'type': 'inlet',
-				'value': [float(condition[1]), 0] if len(condition) > 1 else [0, 0],
-				'description': condition[2:] if len(condition) > 2 else ''
+				'description': condition[3:] if len(condition) > 1 else ''
 			})
 		case 'outlet':
 			conditions['boundary'].append({
@@ -108,7 +107,6 @@ for field in mesh.field_data:
 		case 'condition':
 			conditions['boundary'].append({
 				'tag': condition_code,
-				'type': 'condition',
 				'description': condition[1:] if len(condition) > 1 else ''
 			})
 

@@ -254,6 +254,7 @@ void setBoundaryConditions() {
 			switch (type) {
 				case INLET:
 					current = INLET;
+					computationData.uVertex[node] = boundaries[condition].value[0];
 					break;
 				case OUTLET:
 					if (current == SYMMETRY || current == OUTLET_SYMMETRY)
