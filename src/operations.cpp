@@ -73,9 +73,9 @@ void computeGeometry() {
 				jacobi = abs(scalarProduct(crossProduct(OA, OB), OC));
 
 			if (tetrahedra == 0)
-				timeStep = jacobi / (oppositeTriangleArea * 2);
+				maxHeight = jacobi / (oppositeTriangleArea * 2);
 			else if (timeStep > jacobi / (oppositeTriangleArea * 2))
-				timeStep = jacobi / (oppositeTriangleArea * 2);
+				maxHeight = jacobi / (oppositeTriangleArea * 2);
 		}
 	}
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
@@ -84,7 +84,7 @@ void computeGeometry() {
 			tetrahedraGeometry.vertexWeight[tetrahedra][vertex] = tetrahedraGeometry.solidAngle[tetrahedra][vertex] / angleTotal[node];
 		}
 	}
-	timeStep *= input.cfl / (6 * maxRecession);
+	maxHeight /= 6;
 }
 }
 //}}}
@@ -124,9 +124,8 @@ void computeMeanGradient() {
 		}
 	}
 }
-void computeFluxes() {
+void computeVertexGradient() {
 	computationData.vertexGradient = vector<array<double, 3>>(mesh.nodes.size());
-	computationData.flux.fill(vector<double>(mesh.nodes.size()));
 
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
@@ -137,30 +136,18 @@ void computeFluxes() {
 			vertexGradient = summation(vertexGradient, multiplication(gradient, weight));
 		}
 	}
+}
 
-	// diffusive flux
+void computeDiffusiveFlux() {
+	computationData.flux.fill(vector<double>(mesh.nodes.size()));
+
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
 		const auto &gradient = computationData.gradient[tetrahedra];
 		uint vertexIndex = 0;
 		for (auto &_node : mesh.tetrahedra[tetrahedra]) {
 			const auto node = _node - 1;
 			auto &vertexGradient = computationData.vertexGradient[node];
-			const auto &boundaryType = boundaryConditions[node];
-			if (boundaryType == SYMMETRY || boundaryType == OUTLET_SYMMETRY) {
-				auto &symmetryVector = symmetryConditions[node];
-				if (symmetryVector.size() == 1) {
-					vertexGradient = crossProduct(crossProduct(symmetryVector[0], vertexGradient), symmetryVector[0]);
-				} else {
-					auto &symmetry1 = symmetryVector[0];
-					auto &symmetry2 = symmetryVector[1];
 
-					// vertexGradient = crossProduct(crossProduct(crossProduct(symmetry2, crossProduct(symmetry1, vertexGradient)), symmetry1), symmetry2);
-					auto s1 = multiplication(symmetry1, scalarProduct(vertexGradient, symmetry1));
-					auto s2 = multiplication(symmetry2, scalarProduct(vertexGradient, symmetry2));
-					vertexGradient = subtraction(vertexGradient, summation(s1, s2));
-				}
-			}
-			// const auto &area = tetrahedraGeometry.triangleArea[tetrahedra][vertexIndex];
 			const auto &normal = tetrahedraGeometry.normal[tetrahedra][vertexIndex];
 			const auto &weight = tetrahedraGeometry.vertexWeight[tetrahedra][vertexIndex];
 			auto &flux = computationData.flux[1][node];
@@ -173,8 +160,8 @@ void computeFluxes() {
 }
 //}}}
 
-namespace Triangles { //{{{
-void ApplyBoundaryConditions() {
+namespace Nodes { //{{{
+void computeHamitonianFlux() {
 	uint nodeIndex = 0;
 	for (auto &type : boundaryConditions) {
 		auto &fluxHamiltonian = computationData.flux[0][nodeIndex];
@@ -206,10 +193,15 @@ void ApplyBoundaryConditions() {
 		nodeIndex++;
 	}
 }
-}
-//}}}
 
-namespace Nodes { //{{{
+void computeResults() {
+	for (uint node = 0; node < mesh.nodes.size(); ++node) {
+		auto &uVertex = computationData.uVertex[node];
+		auto &flux = computationData.flux;
+		uVertex += timeStep * (flux[0][node] + input.diffusiveWeight * recession[node] * flux[1][node]);
+		timeTotal += timeStep;
+	}
+}
 double getMaxRecession() {
 	auto maxRecession = 0.0;
 	if (anisotropic) {
@@ -223,12 +215,20 @@ double getMaxRecession() {
 	}
 	return maxRecession;
 }
-void computeResults() {
-	for (uint node = 0; node < mesh.nodes.size(); ++node) {
-		auto &uVertex = computationData.uVertex[node];
-		auto &flux = computationData.flux;
-		uVertex += timeStep * (flux[0][node] + input.diffusiveWeight * recession[node] * flux[1][node]);
-		timeTotal += timeStep;
+void applySymmetry() {
+	for (auto &[node, symmetryVector] : symmetryConditions) {
+		auto &vertexGradient = computationData.vertexGradient[node];
+		if (symmetryVector.size() == 1) {
+			vertexGradient = crossProduct(crossProduct(symmetryVector[0], vertexGradient), symmetryVector[0]);
+		} else {
+			auto &symmetry1 = symmetryVector[0];
+			auto &symmetry2 = symmetryVector[1];
+
+			// vertexGradient = crossProduct(crossProduct(crossProduct(symmetry2, crossProduct(symmetry1, vertexGradient)), symmetry1), symmetry2);
+			auto s1 = multiplication(symmetry1, scalarProduct(vertexGradient, symmetry1));
+			auto s2 = multiplication(symmetry2, scalarProduct(vertexGradient, symmetry2));
+			vertexGradient = subtraction(vertexGradient, summation(s1, s2));
+		}
 	}
 }
 

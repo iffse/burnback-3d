@@ -27,6 +27,7 @@ inline std::vector<std::vector<uint>> nodeConditions;
 inline std::vector<uint> boundaryConditions;
 inline std::map<uint, std::vector<std::array<double, 3>>> symmetryConditions;
 inline ComputationData computationData;
+inline double maxHeight;
 
 inline double timeStep;
 inline double timeTotal;

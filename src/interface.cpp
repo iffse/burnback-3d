@@ -156,15 +156,24 @@ void Actions::worker() {
 		tetrahedraGeometry = TetrahedraGeometry(mesh.tetrahedra.size());
 		angleTotal = vector<double>(mesh.nodes.size());
 		computationData = ComputationData(mesh.nodes.size(), mesh.tetrahedra.size());
-		emit newOutput("--> Getting max recession");
-		maxRecession = Nodes::getMaxRecession();
 		emit newOutput("--> Computing geometry");
 		Geometry::computeGeometry();
-		if (anisotropic) {
-			emit newOutput("--> Computing anisotropic matrix");
-			Anisotropic::computeMatrix();
-		}
 	}
+
+	emit newOutput("--> Setting boundary conditions");
+	Nodes::setBoundaryConditions();
+
+	if (anisotropic) {
+		emit newOutput("--> Computing anisotropic matrix");
+		Anisotropic::computeMatrix();
+	}
+
+	emit newOutput("--> Getting max recession");
+	maxRecession = Nodes::getMaxRecession();
+
+	emit newOutput("--> Starting time step");
+	timeStep = maxHeight * input.cfl / (maxRecession);
+
 	emit newOutput("--> Starting subiteration loop");
 	if (currentIter < input.targetIter)
 		errorIter.resize(input.targetIter);
@@ -175,10 +184,12 @@ void Actions::worker() {
 	vector<double> errors;
 	for (; currentIter < input.targetIter; ++currentIter) {
 		Tetrahedra::computeMeanGradient();
-		Tetrahedra::computeFluxes();
+		Tetrahedra::computeVertexGradient();
+		Nodes::applySymmetry();
+		Tetrahedra::computeDiffusiveFlux();
 		if (anisotropic)
 			Anisotropic::computeRecession();
-		Triangles::ApplyBoundaryConditions();
+		Nodes::computeHamitonianFlux();;
 		Nodes::computeResults();
 
 		auto error = Nodes::getError();
@@ -370,7 +381,6 @@ void Actions::updateBoundaries(bool saveToFile, bool pretty) {
 		    uint(type),
 		    valuesArray,
 		    description.toStdString()};
-		Nodes::setBoundaryConditions();
 	}
 
 	appendOutput("Boundaries updated");

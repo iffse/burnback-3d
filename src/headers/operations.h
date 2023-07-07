@@ -95,16 +95,16 @@ void computeGeometry();
 
 namespace Tetrahedra {
 void computeMeanGradient();
-void computeFluxes();
+void computeVertexGradient();
+void computeDiffusiveFlux();
 }
 
-namespace Triangles {
-void ApplyBoundaryConditions();
-}
 
 namespace Nodes {
-double getMaxRecession();
+void computeHamitonianFlux();
 void computeResults();
+double getMaxRecession();
+void applySymmetry();
 void setBoundaryConditions();
 double getError();
 }

@@ -97,7 +97,6 @@ void readMesh(std::string &filepath) {
 			}
 			triangleIndex++;
 		}
-		Nodes::setBoundaryConditions();
 	} catch (...) {
 		throw std::invalid_argument("Unable to read boundary conditions from JSON file. Missing boundary field or wrong format?");
 	}
