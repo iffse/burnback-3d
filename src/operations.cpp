@@ -86,6 +86,7 @@ void computeGeometry() {
 		}
 	}
 	minHeight /= 6;
+	timeStep = input.cfl * minHeight;
 }
 }
 //}}}
