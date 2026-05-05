@@ -6,10 +6,10 @@
 
 class Actions : public QObject {
 	Q_OBJECT
-	public:
+      public:
 	explicit Actions(QObject *parent = nullptr);
 
-	signals:
+      signals:
 	void newOutput(QString output);
 	void updateProgress(uint progress, uint total);
 	void finished();
@@ -21,7 +21,7 @@ class Actions : public QObject {
 	void graphErrorIter(std::vector<uint> iteration, std::vector<double> error, uint xMax, double yMax);
 	void errorIterUpdate(std::vector<double> errors, uint maxIter, double maxError);
 
-public slots:
+      public slots:
 	void readMesh(QString path);
 	void readMeshWorker(QString path);
 	void afterReadMesh(bool success);

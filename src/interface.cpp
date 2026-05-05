@@ -189,7 +189,7 @@ void Actions::worker() {
 		Tetrahedra::computeDiffusiveFlux();
 		if (anisotropic)
 			Anisotropic::computeRecession();
-		Nodes::computeHamitonianFlux();;
+		Nodes::computeHamitonianFlux();
 		Nodes::computeResults();
 
 		auto error = Nodes::getError();
@@ -380,7 +380,8 @@ void Actions::updateBoundaries(bool saveToFile, bool pretty) {
 		boundaries[key] = Boundary{
 		    uint(type),
 		    valuesArray,
-		    description.toStdString()};
+		    description.toStdString()
+		};
 	}
 
 	appendOutput("Boundaries updated");

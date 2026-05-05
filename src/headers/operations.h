@@ -99,7 +99,6 @@ void computeVertexGradient();
 void computeDiffusiveFlux();
 }
 
-
 namespace Nodes {
 void computeHamitonianFlux();
 void computeResults();

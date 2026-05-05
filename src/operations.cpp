@@ -101,7 +101,8 @@ void computeMeanGradient() {
 		    computationData.uVertex[nodeO],
 		    computationData.uVertex[nodeA],
 		    computationData.uVertex[nodeB],
-		    computationData.uVertex[nodeC]};
+		    computationData.uVertex[nodeC]
+		};
 		const auto &vertexOCoord = mesh.nodes[nodeO];
 		const auto &vertexACoord = mesh.nodes[nodeA];
 		const auto &vertexBCoord = mesh.nodes[nodeB];
