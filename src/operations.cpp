@@ -72,10 +72,11 @@ void computeGeometry() {
 			if (vertex == 0)
 				jacobi = abs(scalarProduct(crossProduct(OA, OB), OC));
 
+			auto height = jacobi / (oppositeTriangleArea * 2);
 			if (tetrahedra == 0)
-				maxHeight = jacobi / (oppositeTriangleArea * 2);
-			else if (timeStep > jacobi / (oppositeTriangleArea * 2))
-				maxHeight = jacobi / (oppositeTriangleArea * 2);
+				minHeight = height;
+			else if (minHeight > height)
+				minHeight = height;
 		}
 	}
 	for (uint tetrahedra = 0; tetrahedra < mesh.tetrahedra.size(); ++tetrahedra) {
@@ -84,7 +85,7 @@ void computeGeometry() {
 			tetrahedraGeometry.vertexWeight[tetrahedra][vertex] = tetrahedraGeometry.solidAngle[tetrahedra][vertex] / angleTotal[node];
 		}
 	}
-	maxHeight /= 6;
+	minHeight /= 6;
 }
 }
 //}}}
